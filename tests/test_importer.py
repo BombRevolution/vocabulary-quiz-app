@@ -4,6 +4,7 @@ sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 import database, importer
 
 CSV_CONTENT = "word,meaning\napple,n. 苹果。\nbanana,n. 香蕉\norange,a. 橙色的\n"
+CSV_NO_HEADER = "apple,n. 苹果。\nbanana,n. 香蕉\norange,a. 橙色的\n"
 
 
 @pytest.fixture()
@@ -11,6 +12,14 @@ def csv_path():
     fd, p = tempfile.mkstemp(suffix=".csv")
     with os.fdopen(fd, "w", encoding="utf-8-sig") as f:
         f.write(CSV_CONTENT)
+    return p
+
+
+@pytest.fixture()
+def csv_path_no_header():
+    fd, p = tempfile.mkstemp(suffix=".csv")
+    with os.fdopen(fd, "w", encoding="utf-8-sig") as f:
+        f.write(CSV_NO_HEADER)
     return p
 
 
@@ -50,4 +59,16 @@ def test_import_book_csv(conn, csv_path):
     assert n == 3
     books = database.list_books(conn)
     assert books[-1]["name"] == "我的词库"
+    assert books[-1]["word_count"] == 3
+
+
+def test_import_book_csv_no_header(conn, csv_path_no_header):
+    tables = importer.detect_excel(csv_path_no_header)
+    head = importer.read_sheet(csv_path_no_header, tables[0], 3, has_header=False)
+    headers, rows = head
+    assert headers[0] == "0"
+    assert len(rows) == 3
+    n = importer.import_book(conn, "无表头词库", csv_path_no_header, tables[0], 0, 1, has_header=False)
+    assert n == 3
+    books = database.list_books(conn)
     assert books[-1]["word_count"] == 3

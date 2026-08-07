@@ -10,11 +10,15 @@ def detect_excel(path):
     return xl.sheet_names
 
 
-def read_sheet(path, sheet, head_n=10):
+def _read(path, sheet, has_header):
+    header = 0 if has_header else None
     if path.lower().endswith(".csv"):
-        df = pd.read_csv(path)
-    else:
-        df = pd.read_excel(path, sheet_name=sheet)
+        return pd.read_csv(path, header=header)
+    return pd.read_excel(path, sheet_name=sheet, header=header)
+
+
+def read_sheet(path, sheet, head_n=10, has_header=True):
+    df = _read(path, sheet, has_header)
     headers = [str(c) for c in df.columns]
     rows = df.head(head_n).fillna("").astype(str).values.tolist()
     return headers, rows
@@ -28,11 +32,8 @@ def clean_meaning(raw):
     return m, pos
 
 
-def load_words(path, sheet, word_col, meaning_col):
-    if path.lower().endswith(".csv"):
-        df = pd.read_csv(path)
-    else:
-        df = pd.read_excel(path, sheet_name=sheet)
+def load_words(path, sheet, word_col, meaning_col, has_header=True):
+    df = _read(path, sheet, has_header)
     out = []
     for _, row in df.iterrows():
         w = row.iloc[word_col]
@@ -43,8 +44,8 @@ def load_words(path, sheet, word_col, meaning_col):
     return out
 
 
-def import_book(conn, name, path, sheet, word_col, meaning_col):
-    rows = load_words(path, sheet, word_col, meaning_col)
+def import_book(conn, name, path, sheet, word_col, meaning_col, has_header=True):
+    rows = load_words(path, sheet, word_col, meaning_col, has_header)
     cleaned = []
     for w, m in rows:
         cm, pos = clean_meaning(m)

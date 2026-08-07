@@ -3,7 +3,7 @@ from tkinter import messagebox
 from tkinter import ttk
 import database
 from ui_theme import (COLOR_BG, COLOR_CARD, COLOR_LIGHT_BLUE, COLOR_PRIMARY, COLOR_MUTED,
-                      COLOR_TEXT, font, maximize)
+                      COLOR_TEXT, COLOR_WRONG, font, maximize)
 
 
 class MainApp:
@@ -31,7 +31,7 @@ class MainApp:
                                     bg=COLOR_CARD, fg=COLOR_TEXT, selectbackground=COLOR_LIGHT_BLUE,
                                     selectforeground=COLOR_PRIMARY, highlightthickness=1,
                                     highlightbackground=COLOR_LIGHT_BLUE, relief="flat", bd=0)
-        self.book_list.pack(fill="y", pady=8)
+        self.book_list.pack(fill="both", expand=True, pady=8)
         self.book_list.bind("<<ListboxSelect>>", lambda e: self.refresh())
 
         btn_col = tk.Frame(left, bg=COLOR_BG)
@@ -45,12 +45,13 @@ class MainApp:
 
         right = tk.Frame(main, bg=COLOR_BG)
         right.pack(side="left", fill="both", expand=True)
+        right.columnconfigure(0, weight=1)
 
         self.title = tk.Label(right, text="", font=font(16, bold=True), bg=COLOR_BG, fg=COLOR_TEXT)
-        self.title.pack(anchor="w", pady=(0, 12))
+        self.title.grid(row=0, column=0, sticky="w", pady=(0, 12))
 
         card = tk.Frame(right, bg=COLOR_CARD, highlightthickness=1, highlightbackground=COLOR_LIGHT_BLUE)
-        card.pack(fill="both", expand=False, pady=(0, 16))
+        card.grid(row=1, column=0, sticky="nsew", pady=(0, 12))
 
         stat_grid = tk.Frame(card, bg=COLOR_CARD)
         stat_grid.pack(fill="x", padx=16, pady=16)
@@ -58,15 +59,75 @@ class MainApp:
         names = [("new_done_today", "今日新词"), ("due", "待复习"), ("wrong_total", "错题总数"),
                  ("mastered", "已掌握"), ("word_total", "词库词数")]
         for i, (key, label) in enumerate(names):
-            cell = tk.Frame(stat_grid, bg=COLOR_CARD)
-            cell.grid(row=0, column=i, padx=12, sticky="nsew")
+            cell = tk.Frame(stat_grid, bg=COLOR_LIGHT_BLUE, highlightthickness=1,
+                            highlightbackground=COLOR_LIGHT_BLUE)
+            cell.grid(row=0, column=i, padx=8, pady=4, sticky="nsew")
             stat_grid.columnconfigure(i, weight=1)
-            tk.Label(cell, text="—", font=font(20, bold=True), bg=COLOR_CARD, fg=COLOR_PRIMARY).pack()
-            tk.Label(cell, text=label, font=font(10), bg=COLOR_CARD, fg=COLOR_MUTED).pack()
+            tk.Label(cell, text="—", font=font(22, bold=True), bg=COLOR_LIGHT_BLUE,
+                     fg=COLOR_PRIMARY).pack(pady=(10, 2))
+            tk.Label(cell, text=label, font=font(10), bg=COLOR_LIGHT_BLUE,
+                     fg=COLOR_MUTED).pack(pady=(0, 10))
             self._stat_cells[key] = cell.winfo_children()[0]
 
         start_btn = ttk.Button(right, text="开始学习", style="Primary.TButton", command=self.start_quiz)
-        start_btn.pack(anchor="w", ipadx=28, ipady=10)
+        start_btn.grid(row=2, column=0, ipadx=40, ipady=12, pady=(0, 12))
+
+        lists = tk.Frame(right, bg=COLOR_BG)
+        lists.grid(row=3, column=0, sticky="nsew")
+        right.rowconfigure(3, weight=1)
+        lists.rowconfigure(0, weight=1)
+        lists.columnconfigure(0, weight=1)
+        lists.columnconfigure(1, weight=1)
+
+        self._build_list_card(lists, 0, "近期错题", self._load_wrong_words, "wrong")
+        self._build_list_card(lists, 1, "今日待复习", self._load_due_words, "due")
+
+    def _build_list_card(self, parent, col, tag, loader, tree_attr):
+        card = tk.Frame(parent, bg=COLOR_CARD, highlightthickness=1, highlightbackground=COLOR_LIGHT_BLUE)
+        card.grid(row=0, column=col, sticky="nsew", padx=(0 if col == 0 else 6, 6 if col == 0 else 0))
+        tk.Label(card, text=tag, font=font(12, bold=True), bg=COLOR_CARD, fg=COLOR_PRIMARY).pack(anchor="w", padx=12, pady=(10, 4))
+        body = tk.Frame(card, bg=COLOR_CARD)
+        body.pack(fill="both", expand=True, padx=8, pady=(0, 8))
+        body.rowconfigure(0, weight=1)
+        body.columnconfigure(0, weight=1)
+        tree = ttk.Treeview(body, height=8, show="headings", columns=("word", "meaning"))
+        tree.heading("word", text="单词")
+        tree.heading("meaning", text="释义")
+        tree.column("word", width=120, anchor="w")
+        tree.column("meaning", width=220, anchor="w")
+        tree.grid(row=0, column=0, sticky="nsew")
+        empty = tk.Label(body, text="暂无数据", font=font(10), bg=COLOR_CARD, fg=COLOR_MUTED)
+        empty.grid(row=0, column=0)
+        setattr(self, tree_attr + "_empty", empty)
+        setattr(self, tree_attr + "_tree", tree)
+        setattr(self, tree_attr + "_card", card)
+
+    def _load_wrong_words(self, book_id, limit=8):
+        rows = self.conn.execute(
+            "SELECT w.word, w.meaning FROM words w JOIN word_state ws ON ws.word_id=w.id AND ws.book_id=w.book_id "
+            "WHERE w.book_id=? AND ws.wrong_count>0 ORDER BY ws.wrong_count DESC, ws.last_result_date DESC LIMIT ?",
+            (book_id, limit)).fetchall()
+        return [(r["word"], r["meaning"]) for r in rows]
+
+    def _load_due_words(self, book_id, limit=8):
+        rows = self.conn.execute(
+            "SELECT w.word, w.meaning FROM words w JOIN word_state ws ON ws.word_id=w.id AND ws.book_id=w.book_id "
+            "WHERE w.book_id=? AND ws.status IN ('poor','blur','good') "
+            "AND ws.next_review_date IS NOT NULL AND ws.next_review_date<=date('now','localtime') "
+            "ORDER BY ws.priority DESC LIMIT ?",
+            (book_id, limit)).fetchall()
+        return [(r["word"], r["meaning"]) for r in rows]
+
+    def _fill_list_tree(self, tree, empty_label, data):
+        tree.delete(*tree.get_children())
+        if not data:
+            tree.grid_forget()
+            empty_label.grid(row=0, column=0)
+            return
+        empty_label.grid_forget()
+        tree.grid(row=0, column=0, sticky="nsew")
+        for word, meaning in data:
+            tree.insert("", "end", values=(word, meaning))
 
     def current_book(self):
         sel = self.book_list.curselection()
@@ -86,9 +147,11 @@ class MainApp:
     def update_stats(self):
         book = self.current_book()
         if not book:
-            self.title.config(text="暂无词库")
+            self.title.config(text="暂无词库，请先导入词库")
             for w in self._stat_cells.values():
                 w.config(text="—")
+            self._fill_list_tree(self.wrong_tree, self.wrong_empty, [])
+            self._fill_list_tree(self.due_tree, self.due_empty, [])
             return
         self.title.config(text=f"当前词库：{book['name']}")
         counts = self._state_counts(book["id"])
@@ -97,6 +160,8 @@ class MainApp:
                   "mastered": str(counts["mastered"]), "word_total": str(book["word_count"])}
         for key, val in values.items():
             self._stat_cells[key].config(text=val)
+        self._fill_list_tree(self.wrong_tree, self.wrong_empty, self._load_wrong_words(book["id"]))
+        self._fill_list_tree(self.due_tree, self.due_empty, self._load_due_words(book["id"]))
 
     def _state_counts(self, book_id):
         due_rows = self.conn.execute(
@@ -118,6 +183,7 @@ class MainApp:
     def start_quiz(self):
         book = self.current_book()
         if not book:
+            messagebox.showinfo("提示", "请先导入词库")
             return
         from ui_quiz import QuizApp
         QuizApp(self.root, self.conn, book, self.config, on_close=self.refresh)
