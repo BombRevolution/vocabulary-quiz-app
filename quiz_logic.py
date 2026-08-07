@@ -1,5 +1,6 @@
 import re
 import unicodedata
+import random
 from datetime import date, timedelta
 
 REVIEW_INTERVALS = {"poor": 1, "blur": 3, "good": 7, "mastered": 30}
@@ -40,6 +41,25 @@ def apply_result(state, result, today):
     s["last_result_date"] = today
     s["next_review_date"] = next_review_date(s["status"], today)
     return s
+
+
+def build_queue(items, today, daily_new):
+    due = [i for i in items
+           if i["status"] in ("poor", "blur", "good")
+           and i.get("next_review_date") and i["next_review_date"] <= today]
+    due.sort(key=lambda i: i["priority"], reverse=True)
+    fresh = [i for i in items if i["status"] == "new" and i.get("first_quiz_date") != today]
+    random.shuffle(fresh)
+    fresh = fresh[:daily_new]
+    queue, r, f = [], 0, 0
+    while r < len(due) or f < len(fresh):
+        if r < len(due):
+            queue.append(due[r]["id"])
+            r += 1
+        if f < len(fresh):
+            queue.append(fresh[f]["id"])
+            f += 1
+    return queue
 
 
 def normalize(text, ignore_case, ignore_punct):
