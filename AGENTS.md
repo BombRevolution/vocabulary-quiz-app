@@ -32,6 +32,7 @@
 - 全局字号用 `ui_theme.FONT_SCALE = 1.3` 控制（`font(N)` 返回 `round(N*1.3)`），窗口尺寸固定不变。
 - 提示方案在设置页下拉显示中文（`ui_settings.HINT_MODE_LABELS`），存储值 `hint_mode` 仍为 reveal/full/count（`HINT_MODE_LABELS_REV` 逆映射写回）。
 - 快捷键：`config` 的 `key_skip`/`key_hint`（Tk event 序列，默认 `<Control-d>`/`<Control-space>`），设置页按键捕获输入框配置，`ui_quiz` 绑定到输入框 `self.entry`。`ui_settings.build_event_sequence(state, keysym)` 为纯函数（无修饰键返回 `""`），`_capture_key` 过滤纯修饰键 keysym 防止无效序列。
+- 错题整理与导出 PDF（`ui_main.py` 的"整理错题"按钮 → `ui_wrongwords.py` 弹窗 → `pdf_export.py`）：不熟练词定义 = `word_state.status IN ('poor','blur')`，由 `database.list_unmastered_words(conn, book_id)` 查询（按 priority 降序）。`pdf_export.export_unmastered_pdf(book_name, words, out_path)` 用 PyMuPDF（`fitz`）生成卡片式 PDF，中文用黑体 `C:\Windows\Fonts\simhei.ttf`（`CN_FONT="simhei.ttf"`，路径由 `_font_path` 拼 `WINDIR`）。导出 PDF 依赖 `fitz`（已装，requirements 已加 `PyMuPDF`）。
 
 ## 测试注意
 
