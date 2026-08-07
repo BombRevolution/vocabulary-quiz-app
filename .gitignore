@@ -4,3 +4,7 @@ __pycache__/
 vocab.db
 config.json
 .pytest_cache/
+build/
+dist/
+*.spec
+*.exe

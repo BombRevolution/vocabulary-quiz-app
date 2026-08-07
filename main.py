@@ -1,11 +1,22 @@
 import json
 import os
+import sys
 import database
 
-BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+if getattr(sys, "frozen", False):
+    BASE_DIR = os.path.dirname(sys.executable)
+    RESOURCE_DIR = getattr(sys, "_MEIPASS", BASE_DIR)
+else:
+    BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+    RESOURCE_DIR = BASE_DIR
+
 DB_PATH = os.path.join(BASE_DIR, "vocab.db")
 CONFIG_PATH = os.path.join(BASE_DIR, "config.json")
 DEFAULT_XLS = "雅思词汇9400词EXCEL词-乱序版.xls"
+
+
+def resource_path(relative):
+    return os.path.join(RESOURCE_DIR, relative)
 
 
 def load_config():
@@ -23,7 +34,7 @@ def load_config():
 def ensure_builtin(conn):
     if database.list_books(conn):
         return
-    xls = os.path.join(BASE_DIR, DEFAULT_XLS)
+    xls = resource_path(DEFAULT_XLS)
     if os.path.exists(xls):
         import importer
         sheet = importer.detect_excel(xls)[0]
