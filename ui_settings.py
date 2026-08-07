@@ -12,6 +12,9 @@ HINT_MODE_LABELS = {
 }
 HINT_MODE_LABELS_REV = {v: k for k, v in HINT_MODE_LABELS.items()}
 
+MODIFIER_KEYSYMS = {"Control_L", "Control_R", "Shift_L", "Shift_R", "Alt_L", "Alt_R",
+                    "Caps_Lock", "Num_Lock"}
+
 
 def build_event_sequence(state, keysym):
     mods = []
@@ -75,8 +78,8 @@ class SettingsDialog(tk.Toplevel):
         center_window(self)
 
     def _capture_key(self, event, entry):
-        if event.keysym == "Escape":
-            return
+        if event.keysym == "Escape" or event.keysym in MODIFIER_KEYSYMS:
+            return "break"
         seq = build_event_sequence(event.state, event.keysym)
         if seq:
             entry.delete(0, "end")
