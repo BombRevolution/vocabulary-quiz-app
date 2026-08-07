@@ -20,7 +20,8 @@ def resource_path(relative):
 
 
 def load_config():
-    defaults = {"daily_new_words": 50, "ignore_case": True, "ignore_punct": False}
+    defaults = {"daily_new_words": 50, "ignore_case": True, "ignore_punct": False,
+                "hint_mode": "reveal", "hint_percent": 30}
     if os.path.exists(CONFIG_PATH):
         with open(CONFIG_PATH, encoding="utf-8") as f:
             data = json.load(f)
