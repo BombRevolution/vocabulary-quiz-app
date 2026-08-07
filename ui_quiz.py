@@ -132,6 +132,8 @@ class QuizApp:
         self.entry.focus_set()
 
     def submit(self):
+        if self.entry.instate(["disabled"]):
+            return
         user = self.entry.get()
         if not user.strip():
             return
