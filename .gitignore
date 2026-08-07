@@ -1,3 +1,6 @@
 __pycache__/
 *.pyc
 .vocab_test.db
+vocab.db
+config.json
+.pytest_cache/
