@@ -3,7 +3,7 @@ from tkinter import ttk, filedialog, messagebox
 import database
 import pdf_export
 from ui_theme import (COLOR_BG, COLOR_CARD, COLOR_PRIMARY, COLOR_LIGHT_BLUE, COLOR_TEXT,
-                      COLOR_MUTED, font, center_window, fit_and_center)
+                      COLOR_MUTED, font, center_window, fit_and_center, maximize)
 
 
 class WrongWordsDialog(tk.Toplevel):
@@ -61,7 +61,7 @@ class WrongWordsDialog(tk.Toplevel):
         ttk.Button(btn_row, text="关闭", style="Secondary.TButton",
                    command=self.destroy).pack(side="right", padx=(0, 8))
 
-        fit_and_center(self, 900, 680)
+        maximize(self)
 
     def export_pdf(self):
         if not self.words:
