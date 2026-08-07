@@ -35,10 +35,11 @@ class SettingsDialog(tk.Toplevel):
         self.config = config
         self.db_path = db_path
         self.title("设置")
-        self.geometry("560x560")
+        self.geometry("620x680")
         self.resizable(False, False)
         self.configure(bg=COLOR_BG)
         self.grab_set()
+        self.option_add("*TCombobox*Listbox.font", font(14))
         rows = tk.Frame(self, bg=COLOR_BG, padx=32, pady=28)
         rows.pack(fill="both", expand=True)
         tk.Label(rows, text="设置", font=font(18, bold=True), bg=COLOR_BG,

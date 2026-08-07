@@ -12,8 +12,8 @@ class ImportDialog(tk.Toplevel):
         self.conn = conn
         self.on_close = on_close
         self.title("导入词库")
-        self.geometry("900x660")
-        self.minsize(760, 540)
+        self.geometry("1040x760")
+        self.minsize(880, 640)
         self.configure(bg=COLOR_BG)
         self.grab_set()
         self.path = None

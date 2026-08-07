@@ -91,6 +91,32 @@ def test_hint_used_correct_counts_as_blur(quiz_app):
         "SELECT status FROM word_state WHERE book_id=? AND word_id=?",
         (qa.book["id"], item["id"])).fetchone()
     assert row[0] == "blur"
+    assert qa.feedback.cget("fg") == ui_theme.COLOR_BLUR
+
+
+def test_hint_used_wrong_counts_as_poor(quiz_app):
+    qa = quiz_app
+    item = qa.queue[qa.idx]
+    qa.hint_used.add(item["id"])
+    qa.entry.insert(0, "zzz" + item["word"])
+    qa.submit()
+    assert qa.stats["wrong"] == 1
+    row = qa.conn.execute(
+        "SELECT status FROM word_state WHERE book_id=? AND word_id=?",
+        (qa.book["id"], item["id"])).fetchone()
+    assert row[0] == "poor"
+
+
+def test_skip_blocked_after_hint(quiz_app):
+    qa = quiz_app
+    item = qa.queue[qa.idx]
+    qa.hint_used.add(item["id"])
+    qa.skip()
+    assert qa.stats.get("skipped", 0) == 0
+    row = qa.conn.execute(
+        "SELECT status FROM word_state WHERE book_id=? AND word_id=?",
+        (qa.book["id"], item["id"])).fetchone()
+    assert row[0] != "mastered"
 
 
 def test_skip_hotkey_bound(quiz_app):

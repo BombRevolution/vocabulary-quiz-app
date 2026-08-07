@@ -12,8 +12,8 @@ class WrongWordsDialog(tk.Toplevel):
         self.conn = conn
         self.book = book
         self.title(f"不熟练词整理 - {book['name']}")
-        self.geometry("760x560")
-        self.minsize(640, 480)
+        self.geometry("900x680")
+        self.minsize(760, 560)
         self.resizable(True, True)
         self.configure(bg=COLOR_BG)
         self.grab_set()

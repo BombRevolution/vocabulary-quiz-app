@@ -21,8 +21,8 @@ class QuizApp:
 
         self.win = tk.Toplevel(root)
         self.win.title(f"拼写测试 - {book['name']}")
-        self.win.geometry("900x680")
-        self.win.minsize(760, 560)
+        self.win.geometry("1080x820")
+        self.win.minsize(900, 680)
         self.win.configure(bg=COLOR_BG)
         self.win.grab_set()
 
@@ -105,8 +105,9 @@ class QuizApp:
         self.remain.grid(row=0, column=0, sticky="w")
         ttk.Button(bottom, text="提示", style="Secondary.TButton",
                    command=self.reveal_hint).grid(row=0, column=1, sticky="e", padx=(0, 8))
-        ttk.Button(bottom, text="跳过", style="Secondary.TButton",
-                   command=self.skip).grid(row=0, column=2, sticky="e", padx=(0, 8))
+        self.skip_btn = ttk.Button(bottom, text="跳过", style="Secondary.TButton",
+                   command=self.skip)
+        self.skip_btn.grid(row=0, column=2, sticky="e", padx=(0, 8))
         ttk.Button(bottom, text="退出并保存", style="Secondary.TButton",
                    command=self.finish).grid(row=0, column=3, sticky="e")
 
@@ -150,6 +151,7 @@ class QuizApp:
         self.entry.config(state="normal")
         self.entry.delete(0, "end")
         self.entry.focus_set()
+        self.skip_btn.config(state="disabled" if item["id"] in self.hint_used else "normal")
 
     def reveal_hint(self):
         if self.entry.instate(["disabled"]):
@@ -166,11 +168,14 @@ class QuizApp:
             text = quiz_logic.reveal_mask(word, pct)
         self.hint_text.config(text=f"提示：{text}")
         self.hint_used.add(item["id"])
+        self.skip_btn.config(state="disabled")
 
     def skip(self):
         if self.entry.instate(["disabled"]):
             return
         item = self.queue[self.idx]
+        if item["id"] in self.hint_used:
+            return
         self.stats["skipped"] = self.stats.get("skipped", 0) + 1
         self._save(item, "skip")
         self.feedback.config(text=f"已标记为学会：{item['word']}", fg=COLOR_CORRECT)
@@ -194,12 +199,15 @@ class QuizApp:
         self.stats[save_result] += 1
         self._save(item, save_result)
         if result == "correct":
-            label = "✓ 正确（借助提示）" if used_hint else f"✓ 正确：{item['word']}"
-            self.feedback.config(text=label, fg=COLOR_CORRECT)
+            if used_hint:
+                self.feedback.config(text=f"模糊（借助提示）：{item['word']}", fg=COLOR_BLUR)
+            else:
+                self.feedback.config(text=f"✓ 正确：{item['word']}", fg=COLOR_CORRECT)
         elif result == "blur":
             self.feedback.config(text=f"很接近！正确拼写是 {item['word']}", fg=COLOR_BLUR)
         else:
-            self.feedback.config(text=f"✗ 错误，正确拼写是 {item['word']}", fg=COLOR_WRONG)
+            label = f"✗ 错误（借助提示），正确拼写是 {item['word']}" if used_hint else f"✗ 错误，正确拼写是 {item['word']}"
+            self.feedback.config(text=label, fg=COLOR_WRONG)
         if result != "correct":
             self.hint_used.discard(item["id"])
             if item["id"] not in self.retry_done:

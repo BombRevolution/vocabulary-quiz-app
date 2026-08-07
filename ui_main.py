@@ -13,8 +13,8 @@ class MainApp:
         self.db_path = db_path
         self.config = config
         root.title("单词拼写测试")
-        root.geometry("1100x760")
-        root.minsize(900, 640)
+        root.geometry("1280x880")
+        root.minsize(1000, 720)
         root.configure(bg=COLOR_BG)
         self._build_ui()
         self.refresh()
