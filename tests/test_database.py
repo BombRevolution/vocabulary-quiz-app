@@ -96,3 +96,25 @@ def test_delete_book_keeps_others(conn):
     assert len(books) == 1
     assert books[0]["id"] == bid2
     assert conn.execute("SELECT COUNT(*) FROM words WHERE book_id=?", (bid2,)).fetchone()[0] == 1
+
+
+def test_list_unmastered_words_only_poor_blur(conn):
+    bid = database.add_book(conn, "测试词库", "imported")
+    database.insert_words(conn, bid, [
+        ("apple", "n. 苹果", "n"),
+        ("banana", "n. 香蕉", "n"),
+        ("cat", "n. 猫", "n"),
+        ("dog", "n. 狗", "n"),
+    ])
+    conn.execute("UPDATE word_state SET status='poor', priority=8, last_result_date='2026-08-07' "
+                 "WHERE book_id=? AND word_id=(SELECT id FROM words WHERE word='apple')", (bid,))
+    conn.execute("UPDATE word_state SET status='blur', priority=3, last_result_date='2026-08-06' "
+                 "WHERE book_id=? AND word_id=(SELECT id FROM words WHERE word='banana')", (bid,))
+    conn.execute("UPDATE word_state SET status='mastered' "
+                 "WHERE book_id=? AND word_id=(SELECT id FROM words WHERE word='cat')", (bid,))
+    conn.commit()
+    result = database.list_unmastered_words(conn, bid)
+    words = [r["word"] for r in result]
+    assert words == ["apple", "banana"]
+    assert result[0]["meaning"] == "n. 苹果"
+    assert result[0]["pos"] == "n"

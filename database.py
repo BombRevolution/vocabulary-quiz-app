@@ -102,6 +102,16 @@ def reset_book_progress(conn, book_id):
     conn.commit()
 
 
+def list_unmastered_words(conn, book_id):
+    rows = conn.execute(
+        "SELECT w.word, w.meaning, w.pos FROM words w "
+        "JOIN word_state ws ON ws.word_id=w.id AND ws.book_id=w.book_id "
+        "WHERE w.book_id=? AND ws.status IN ('poor','blur') "
+        "ORDER BY ws.priority DESC, ws.last_result_date DESC",
+        (book_id,)).fetchall()
+    return [dict(r) for r in rows]
+
+
 def delete_book(conn, book_id):
     try:
         conn.execute("DELETE FROM daily_log WHERE book_id=?", (book_id,))
