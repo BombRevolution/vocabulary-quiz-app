@@ -26,8 +26,8 @@ class MainApp:
 
         left = tk.Frame(main, bg=COLOR_BG)
         left.pack(side="left", fill="y", padx=(0, 20))
-        tk.Label(left, text="词库", font=font(16, bold=True), bg=COLOR_BG, fg=COLOR_PRIMARY).pack(anchor="w")
-        self.book_list = tk.Listbox(left, width=28, height=16, font=font(12),
+        tk.Label(left, text="词库", font=font(17, bold=True), bg=COLOR_BG, fg=COLOR_PRIMARY).pack(anchor="w")
+        self.book_list = tk.Listbox(left, width=28, height=16, font=font(14),
                                     bg=COLOR_CARD, fg=COLOR_TEXT, selectbackground=COLOR_LIGHT_BLUE,
                                     selectforeground=COLOR_PRIMARY, highlightthickness=1,
                                     highlightbackground=COLOR_LIGHT_BLUE, relief="flat", bd=0)
@@ -47,7 +47,7 @@ class MainApp:
         right.pack(side="left", fill="both", expand=True)
         right.columnconfigure(0, weight=1)
 
-        self.title = tk.Label(right, text="", font=font(16, bold=True), bg=COLOR_BG, fg=COLOR_TEXT)
+        self.title = tk.Label(right, text="", font=font(17, bold=True), bg=COLOR_BG, fg=COLOR_TEXT)
         self.title.grid(row=0, column=0, sticky="w", pady=(0, 12))
 
         card = tk.Frame(right, bg=COLOR_CARD, highlightthickness=1, highlightbackground=COLOR_LIGHT_BLUE)
@@ -63,9 +63,9 @@ class MainApp:
                             highlightbackground=COLOR_LIGHT_BLUE)
             cell.grid(row=0, column=i, padx=8, pady=4, sticky="nsew")
             stat_grid.columnconfigure(i, weight=1)
-            tk.Label(cell, text="—", font=font(22, bold=True), bg=COLOR_LIGHT_BLUE,
+            tk.Label(cell, text="—", font=font(24, bold=True), bg=COLOR_LIGHT_BLUE,
                      fg=COLOR_PRIMARY).pack(pady=(10, 2))
-            tk.Label(cell, text=label, font=font(10), bg=COLOR_LIGHT_BLUE,
+            tk.Label(cell, text=label, font=font(11), bg=COLOR_LIGHT_BLUE,
                      fg=COLOR_MUTED).pack(pady=(0, 10))
             self._stat_cells[key] = cell.winfo_children()[0]
 
@@ -85,7 +85,7 @@ class MainApp:
     def _build_list_card(self, parent, col, tag, loader, tree_attr):
         card = tk.Frame(parent, bg=COLOR_CARD, highlightthickness=1, highlightbackground=COLOR_LIGHT_BLUE)
         card.grid(row=0, column=col, sticky="nsew", padx=(0 if col == 0 else 6, 6 if col == 0 else 0))
-        tk.Label(card, text=tag, font=font(12, bold=True), bg=COLOR_CARD, fg=COLOR_PRIMARY).pack(anchor="w", padx=12, pady=(10, 4))
+        tk.Label(card, text=tag, font=font(14, bold=True), bg=COLOR_CARD, fg=COLOR_PRIMARY).pack(anchor="w", padx=12, pady=(10, 4))
         body = tk.Frame(card, bg=COLOR_CARD)
         body.pack(fill="both", expand=True, padx=8, pady=(0, 8))
         body.rowconfigure(0, weight=1)
@@ -96,7 +96,7 @@ class MainApp:
         tree.column("word", width=120, anchor="w")
         tree.column("meaning", width=220, anchor="w")
         tree.grid(row=0, column=0, sticky="nsew")
-        empty = tk.Label(body, text="暂无数据", font=font(10), bg=COLOR_CARD, fg=COLOR_MUTED)
+        empty = tk.Label(body, text="暂无数据", font=font(11), bg=COLOR_CARD, fg=COLOR_MUTED)
         empty.grid(row=0, column=0)
         setattr(self, tree_attr + "_empty", empty)
         setattr(self, tree_attr + "_tree", tree)

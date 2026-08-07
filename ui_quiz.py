@@ -60,41 +60,43 @@ class QuizApp:
 
     def _build_ui(self):
         self.win.columnconfigure(0, weight=1)
-        self.win.rowconfigure(2, weight=1)
+        self.win.rowconfigure(1, weight=1)
 
         top = tk.Frame(self.win, bg=COLOR_BG)
         top.grid(row=0, column=0, sticky="ew", padx=20, pady=(16, 4))
         self.prog = ttk.Progressbar(top, maximum=self.total)
         self.prog.pack(fill="x")
-        self.prog_label = tk.Label(top, text="", font=font(10), bg=COLOR_BG, fg=COLOR_MUTED)
+        self.prog_label = tk.Label(top, text="", font=font(11), bg=COLOR_BG, fg=COLOR_MUTED)
         self.prog_label.pack(pady=(4, 0))
 
         center = tk.Frame(self.win, bg=COLOR_BG)
         center.grid(row=1, column=0, sticky="nsew", padx=20, pady=12)
-        self.win.rowconfigure(1, weight=1)
 
         card = tk.Frame(center, bg=COLOR_CARD, highlightthickness=1, highlightbackground=COLOR_LIGHT_BLUE)
         card.pack(fill="both", expand=True)
 
-        tk.Label(card, text="请根据释义拼写英文单词", font=font(10), bg=COLOR_CARD,
-                 fg=COLOR_MUTED).pack(pady=(20, 4))
-        self.meaning_label = tk.Label(card, text="", font=font(18, bold=True), bg=COLOR_CARD, fg=COLOR_TEXT,
-                                      wraplength=760, justify="center")
-        self.meaning_label.pack(pady=(8, 20))
+        inner = tk.Frame(card, bg=COLOR_CARD)
+        inner.place(relx=0.5, rely=0.5, anchor="center")
 
-        self.entry = ttk.Entry(card, font=font(18, bold=True), justify="center")
-        self.entry.pack(ipady=10, padx=40)
+        tk.Label(inner, text="请根据释义拼写英文单词", font=font(11), bg=COLOR_CARD,
+                 fg=COLOR_MUTED).pack(pady=(0, 8))
+        self.meaning_label = tk.Label(inner, text="", font=font(20, bold=True), bg=COLOR_CARD, fg=COLOR_TEXT,
+                                      wraplength=760, justify="center")
+        self.meaning_label.pack(pady=(4, 20))
+
+        self.entry = ttk.Entry(inner, font=font(20, bold=True), justify="center", width=24)
+        self.entry.pack(ipady=10)
         self.entry.bind("<Return>", lambda e: self.submit())
 
-        self.feedback = tk.Label(card, text="", font=font(18, bold=True), bg=COLOR_CARD)
+        self.feedback = tk.Label(inner, text="", font=font(18, bold=True), bg=COLOR_CARD)
         self.feedback.pack(pady=(20, 4))
-        self.hint = tk.Label(card, text="", font=font(10), bg=COLOR_CARD, fg=COLOR_MUTED)
+        self.hint = tk.Label(inner, text="", font=font(11), bg=COLOR_CARD, fg=COLOR_MUTED)
         self.hint.pack(pady=(0, 12))
 
         bottom = tk.Frame(self.win, bg=COLOR_BG)
         bottom.grid(row=2, column=0, sticky="ew", padx=20, pady=12)
         bottom.columnconfigure(0, weight=1)
-        self.remain = tk.Label(bottom, text="", font=font(10), bg=COLOR_BG, fg=COLOR_MUTED)
+        self.remain = tk.Label(bottom, text="", font=font(11), bg=COLOR_BG, fg=COLOR_MUTED)
         self.remain.grid(row=0, column=0, sticky="w")
         ttk.Button(bottom, text="退出并保存", style="Secondary.TButton",
                    command=self.finish).grid(row=0, column=1, sticky="e")
@@ -168,8 +170,6 @@ class QuizApp:
         self._show_next()
 
     def finish(self):
-        messagebox.showinfo("本次小结",
-            f"正确 {self.stats['correct']} 题，模糊 {self.stats['blur']} 题，错误 {self.stats['wrong']} 题")
         self.win.destroy()
         if self.on_close:
             self.on_close()

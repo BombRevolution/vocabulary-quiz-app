@@ -2,7 +2,8 @@ import json
 import os
 import tkinter as tk
 from tkinter import ttk
-from ui_theme import COLOR_BG, COLOR_TEXT, COLOR_PRIMARY, font, center_window
+from ui_theme import (COLOR_BG, COLOR_TEXT, COLOR_PRIMARY, COLOR_LIGHT_BLUE,
+                      font, center_window)
 
 
 class SettingsDialog(tk.Toplevel):
@@ -19,16 +20,20 @@ class SettingsDialog(tk.Toplevel):
         rows.pack(fill="both", expand=True)
         tk.Label(rows, text="设置", font=font(18, bold=True), bg=COLOR_BG,
                  fg=COLOR_PRIMARY).grid(row=0, column=0, columnspan=2, sticky="w", pady=(0, 20))
-        tk.Label(rows, text="每日新词数", font=font(12), bg=COLOR_BG, fg=COLOR_TEXT).grid(row=1, column=0, sticky="w", pady=10)
+        tk.Label(rows, text="每日新词数", font=font(14), bg=COLOR_BG, fg=COLOR_TEXT).grid(row=1, column=0, sticky="w", pady=10)
         self.daily_var = tk.IntVar(value=int(config.get("daily_new_words", 50)))
         sp = ttk.Spinbox(rows, from_=1, to=500, textvariable=self.daily_var, width=14)
         sp.grid(row=1, column=1, sticky="w")
-        tk.Label(rows, text="忽略大小写", font=font(12), bg=COLOR_BG, fg=COLOR_TEXT).grid(row=2, column=0, sticky="w", pady=10)
+        tk.Label(rows, text="忽略大小写", font=font(14), bg=COLOR_BG, fg=COLOR_TEXT).grid(row=2, column=0, sticky="w", pady=10)
         self.case_var = tk.BooleanVar(value=config.get("ignore_case", True))
-        ttk.Checkbutton(rows, variable=self.case_var, style="TCheckbutton").grid(row=2, column=1, sticky="w")
-        tk.Label(rows, text="忽略标点", font=font(12), bg=COLOR_BG, fg=COLOR_TEXT).grid(row=3, column=0, sticky="w", pady=10)
+        tk.Checkbutton(rows, variable=self.case_var, font=font(14), bg=COLOR_BG, fg=COLOR_TEXT,
+                       selectcolor=COLOR_LIGHT_BLUE, activebackground=COLOR_BG,
+                       activeforeground=COLOR_TEXT, padx=6, pady=4).grid(row=2, column=1, sticky="w")
+        tk.Label(rows, text="忽略标点", font=font(14), bg=COLOR_BG, fg=COLOR_TEXT).grid(row=3, column=0, sticky="w", pady=10)
         self.punct_var = tk.BooleanVar(value=config.get("ignore_punct", False))
-        ttk.Checkbutton(rows, variable=self.punct_var, style="TCheckbutton").grid(row=3, column=1, sticky="w")
+        tk.Checkbutton(rows, variable=self.punct_var, font=font(14), bg=COLOR_BG, fg=COLOR_TEXT,
+                       selectcolor=COLOR_LIGHT_BLUE, activebackground=COLOR_BG,
+                       activeforeground=COLOR_TEXT, padx=6, pady=4).grid(row=3, column=1, sticky="w")
         ttk.Button(rows, text="保存", style="Primary.TButton", command=self.save).grid(row=4, column=0, columnspan=2, pady=(20, 0))
         center_window(self)
 

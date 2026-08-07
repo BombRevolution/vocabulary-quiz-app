@@ -36,21 +36,15 @@ def maximize(root):
 
 
 def center_window(win):
-    def _do_center():
-        try:
-            win.update_idletasks()
-            w = win.winfo_width()
-            h = win.winfo_height()
-            sw = win.winfo_screenwidth()
-            sh = win.winfo_screenheight()
-            x = max(0, (sw - w) // 2)
-            y = max(0, (sh - h) // 2)
-            win.geometry(f"+{x}+{y}")
-        except Exception:
-            pass
     try:
         win.update_idletasks()
-        win.after(1, _do_center)
+        w = win.winfo_width()
+        h = win.winfo_height()
+        sw = win.winfo_screenwidth()
+        sh = win.winfo_screenheight()
+        x = max(0, (sw - w) // 2)
+        y = max(0, (sh - h) // 2)
+        win.geometry(f"+{x}+{y}")
     except Exception:
         pass
 
@@ -74,7 +68,7 @@ def apply_theme(root):
     except Exception:
         pass
 
-    fb = font(12)
+    fb = font(14)
     style = ttk.Style(root)
     try:
         style.theme_use("clam")
@@ -88,47 +82,47 @@ def apply_theme(root):
     style.configure("TLabel", background=COLOR_BG, foreground=COLOR_TEXT)
     style.configure("Card.TLabel", background=COLOR_CARD, foreground=COLOR_TEXT)
 
-    style.configure("Title.TLabel", font=font(20, bold=True), foreground=COLOR_PRIMARY, background=COLOR_BG)
-    style.configure("Heading.TLabel", font=font(16, bold=True), foreground=COLOR_TEXT, background=COLOR_BG)
-    style.configure("Muted.TLabel", font=font(10), foreground=COLOR_MUTED, background=COLOR_BG)
-    style.configure("CardTitle.TLabel", font=font(16, bold=True), foreground=COLOR_PRIMARY, background=COLOR_CARD)
-    style.configure("StatValue.TLabel", font=font(20, bold=True), foreground=COLOR_PRIMARY,
+    style.configure("Title.TLabel", font=font(22, bold=True), foreground=COLOR_PRIMARY, background=COLOR_BG)
+    style.configure("Heading.TLabel", font=font(17, bold=True), foreground=COLOR_TEXT, background=COLOR_BG)
+    style.configure("Muted.TLabel", font=font(11), foreground=COLOR_MUTED, background=COLOR_BG)
+    style.configure("CardTitle.TLabel", font=font(17, bold=True), foreground=COLOR_PRIMARY, background=COLOR_CARD)
+    style.configure("StatValue.TLabel", font=font(22, bold=True), foreground=COLOR_PRIMARY,
                     background=COLOR_CARD, anchor="center")
-    style.configure("StatName.TLabel", font=font(10), foreground=COLOR_MUTED, background=COLOR_CARD,
+    style.configure("StatName.TLabel", font=font(11), foreground=COLOR_MUTED, background=COLOR_CARD,
                     anchor="center")
 
     style.configure("Primary.TButton", font=fb, background=COLOR_PRIMARY, foreground="#ffffff",
-                    borderwidth=0, focusthickness=0, padding=(18, 8))
+                    borderwidth=0, focusthickness=0, padding=(28, 14))
     style.map("Primary.TButton",
               background=[("active", COLOR_PRIMARY_DARK), ("pressed", COLOR_PRIMARY_DARK)],
               foreground=[("disabled", "#cbd5e0")])
     style.configure("Secondary.TButton", font=fb, background=COLOR_LIGHT_BLUE,
-                    foreground=COLOR_PRIMARY, borderwidth=0, focusthickness=0, padding=(12, 6))
+                    foreground=COLOR_PRIMARY, borderwidth=0, focusthickness=0, padding=(24, 12))
     style.map("Secondary.TButton",
               background=[("active", "#d6e6ff"), ("pressed", "#d6e6ff")],
               foreground=[("disabled", "#a0aec0")])
     style.configure("Danger.TButton", font=fb, background="#fef2f2", foreground=COLOR_WRONG,
-                    borderwidth=0, focusthickness=0, padding=(12, 6))
+                    borderwidth=0, focusthickness=0, padding=(24, 12))
     style.map("Danger.TButton",
               background=[("active", "#fee2e2"), ("pressed", "#fee2e2")])
 
     style.configure("TEntry", font=fb, fieldbackground=COLOR_CARD, bordercolor=COLOR_BORDER,
-                    lightcolor=COLOR_BORDER, darkcolor=COLOR_BORDER, padding=6)
+                    lightcolor=COLOR_BORDER, darkcolor=COLOR_BORDER, padding=8)
     style.map("TEntry", bordercolor=[("focus", COLOR_PRIMARY)], lightcolor=[("focus", COLOR_PRIMARY)],
               darkcolor=[("focus", COLOR_PRIMARY)])
 
     style.configure("TProgressbar", troughcolor=COLOR_LIGHT_BLUE, background=COLOR_PRIMARY,
-                    borderwidth=0, thickness=14)
+                    borderwidth=0, thickness=16)
 
-    style.configure("Treeview", font=fb, background=COLOR_CARD, fieldbackground=COLOR_CARD,
-                    foreground=COLOR_TEXT, rowheight=26)
+    style.configure("Treeview", font=font(13), background=COLOR_CARD, fieldbackground=COLOR_CARD,
+                    foreground=COLOR_TEXT, rowheight=30)
     style.map("Treeview", background=[("selected", COLOR_LIGHT_BLUE)],
               foreground=[("selected", COLOR_PRIMARY)])
-    style.configure("Treeview.Heading", font=font(10, bold=True), background=COLOR_LIGHT_BLUE,
+    style.configure("Treeview.Heading", font=font(11, bold=True), background=COLOR_LIGHT_BLUE,
                     foreground=COLOR_PRIMARY, padding=(4, 4))
 
     style.configure("TCheckbutton", font=fb, background=COLOR_BG, foreground=COLOR_TEXT)
     style.configure("TSpinbox", font=fb, fieldbackground=COLOR_CARD, arrowcolor=COLOR_PRIMARY,
-                    padding=4)
+                    padding=6)
     style.configure("TCombobox", font=fb, fieldbackground=COLOR_CARD, arrowcolor=COLOR_PRIMARY,
-                    padding=4)
+                    padding=6)
