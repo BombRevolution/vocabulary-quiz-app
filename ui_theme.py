@@ -1,5 +1,6 @@
 import ctypes
 import tkinter as tk
+import tkinter.font as tkfont
 from tkinter import ttk
 
 FONT_FAMILY = "Microsoft YaHei UI"
@@ -161,8 +162,10 @@ def apply_theme(root):
     style.configure("TProgressbar", troughcolor=COLOR_LIGHT_BLUE, background=COLOR_PRIMARY,
                     borderwidth=0, thickness=16)
 
-    style.configure("Treeview", font=font(13), background=COLOR_CARD, fieldbackground=COLOR_CARD,
-                    foreground=COLOR_TEXT, rowheight=30)
+    tv_font = font(13)
+    tv_rowheight = tkfont.Font(family=tv_font[0], size=tv_font[1]).metrics("linespace") + 10
+    style.configure("Treeview", font=tv_font, background=COLOR_CARD, fieldbackground=COLOR_CARD,
+                    foreground=COLOR_TEXT, rowheight=tv_rowheight)
     style.map("Treeview", background=[("selected", COLOR_LIGHT_BLUE)],
               foreground=[("selected", COLOR_PRIMARY)])
     style.configure("Treeview.Heading", font=font(11, bold=True), background=COLOR_LIGHT_BLUE,
