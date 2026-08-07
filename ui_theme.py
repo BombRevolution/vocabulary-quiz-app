@@ -35,6 +35,26 @@ def maximize(root):
             pass
 
 
+def center_window(win):
+    def _do_center():
+        try:
+            win.update_idletasks()
+            w = win.winfo_width()
+            h = win.winfo_height()
+            sw = win.winfo_screenwidth()
+            sh = win.winfo_screenheight()
+            x = max(0, (sw - w) // 2)
+            y = max(0, (sh - h) // 2)
+            win.geometry(f"+{x}+{y}")
+        except Exception:
+            pass
+    try:
+        win.update_idletasks()
+        win.after(1, _do_center)
+    except Exception:
+        pass
+
+
 def enable_dpi_awareness():
     try:
         ctypes.windll.shcore.SetProcessDpiAwareness(1)

@@ -5,6 +5,7 @@ import database, importer
 
 CSV_CONTENT = "word,meaning\napple,n. 苹果。\nbanana,n. 香蕉\norange,a. 橙色的\n"
 CSV_NO_HEADER = "apple,n. 苹果。\nbanana,n. 香蕉\norange,a. 橙色的\n"
+CSV_SWAPPED = "中文,word\n苹果,apple\n香蕉,banana\n橙子,orange\n"
 
 
 @pytest.fixture()
@@ -20,6 +21,14 @@ def csv_path_no_header():
     fd, p = tempfile.mkstemp(suffix=".csv")
     with os.fdopen(fd, "w", encoding="utf-8-sig") as f:
         f.write(CSV_NO_HEADER)
+    return p
+
+
+@pytest.fixture()
+def csv_path_swapped():
+    fd, p = tempfile.mkstemp(suffix=".csv")
+    with os.fdopen(fd, "w", encoding="utf-8-sig") as f:
+        f.write(CSV_SWAPPED)
     return p
 
 
@@ -72,3 +81,23 @@ def test_import_book_csv_no_header(conn, csv_path_no_header):
     assert n == 3
     books = database.list_books(conn)
     assert books[-1]["word_count"] == 3
+
+
+def test_auto_detect_with_header(csv_path):
+    d = importer.auto_detect(csv_path)
+    assert d["word_col"] == 0
+    assert d["meaning_col"] == 1
+    assert d["has_header"] is True
+
+
+def test_auto_detect_no_header(csv_path_no_header):
+    d = importer.auto_detect(csv_path_no_header)
+    assert d["word_col"] == 0
+    assert d["meaning_col"] == 1
+    assert d["has_header"] is False
+
+
+def test_auto_detect_swapped_columns(csv_path_swapped):
+    d = importer.auto_detect(csv_path_swapped)
+    assert d["word_col"] == 1
+    assert d["meaning_col"] == 0

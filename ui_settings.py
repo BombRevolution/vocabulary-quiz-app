@@ -2,7 +2,7 @@ import json
 import os
 import tkinter as tk
 from tkinter import ttk
-from ui_theme import COLOR_BG, COLOR_TEXT, COLOR_PRIMARY, font
+from ui_theme import COLOR_BG, COLOR_TEXT, COLOR_PRIMARY, font, center_window
 
 
 class SettingsDialog(tk.Toplevel):
@@ -30,6 +30,7 @@ class SettingsDialog(tk.Toplevel):
         self.punct_var = tk.BooleanVar(value=config.get("ignore_punct", False))
         ttk.Checkbutton(rows, variable=self.punct_var, style="TCheckbutton").grid(row=3, column=1, sticky="w")
         ttk.Button(rows, text="保存", style="Primary.TButton", command=self.save).grid(row=4, column=0, columnspan=2, pady=(20, 0))
+        center_window(self)
 
     def save(self):
         self.config["daily_new_words"] = self.daily_var.get()
