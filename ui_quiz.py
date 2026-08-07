@@ -2,6 +2,9 @@ import tkinter as tk
 from tkinter import ttk, messagebox
 from datetime import date
 import quiz_logic
+from ui_theme import (COLOR_BG, COLOR_CARD, COLOR_CORRECT, COLOR_BLUR, COLOR_WRONG,
+                      COLOR_PRIMARY, COLOR_MUTED, COLOR_TEXT, COLOR_LIGHT_BLUE,
+                      FONT_QUIZ, FONT_BODY, FONT_SMALL)
 
 
 class QuizApp:
@@ -17,7 +20,9 @@ class QuizApp:
 
         self.win = tk.Toplevel(root)
         self.win.title(f"拼写测试 - {book['name']}")
-        self.win.geometry("640x480")
+        self.win.geometry("680x520")
+        self.win.minsize(600, 460)
+        self.win.configure(bg=COLOR_BG)
         self.win.grab_set()
 
         self.items = self._load_queue()
@@ -53,24 +58,45 @@ class QuizApp:
         return [by_id[i] for i in ids]
 
     def _build_ui(self):
-        self.prog = ttk.Progressbar(self.win, maximum=self.total)
-        self.prog.pack(fill="x", padx=16, pady=(16, 4))
-        self.prog_label = ttk.Label(self.win, text="")
-        self.prog_label.pack()
-        self.meaning_label = tk.Label(self.win, text="", font=("", 18), wraplength=560)
-        self.meaning_label.pack(pady=24)
-        self.entry = ttk.Entry(self.win, font=("", 16), justify="center")
-        self.entry.pack(ipady=6)
+        self.win.columnconfigure(0, weight=1)
+        self.win.rowconfigure(2, weight=1)
+
+        top = tk.Frame(self.win, bg=COLOR_BG)
+        top.grid(row=0, column=0, sticky="ew", padx=20, pady=(16, 4))
+        self.prog = ttk.Progressbar(top, maximum=self.total)
+        self.prog.pack(fill="x")
+        self.prog_label = tk.Label(top, text="", font=FONT_SMALL, bg=COLOR_BG, fg=COLOR_MUTED)
+        self.prog_label.pack(pady=(4, 0))
+
+        center = tk.Frame(self.win, bg=COLOR_BG)
+        center.grid(row=1, column=0, sticky="nsew", padx=20, pady=12)
+        self.win.rowconfigure(1, weight=1)
+
+        card = tk.Frame(center, bg=COLOR_CARD, highlightthickness=1, highlightbackground=COLOR_LIGHT_BLUE)
+        card.pack(fill="both", expand=True)
+
+        tk.Label(card, text="请根据释义拼写英文单词", font=FONT_SMALL, bg=COLOR_CARD,
+                 fg=COLOR_MUTED).pack(pady=(20, 4))
+        self.meaning_label = tk.Label(card, text="", font=FONT_QUIZ, bg=COLOR_CARD, fg=COLOR_TEXT,
+                                      wraplength=560, justify="center")
+        self.meaning_label.pack(pady=(8, 20))
+
+        self.entry = ttk.Entry(card, font=FONT_QUIZ, justify="center")
+        self.entry.pack(ipady=10, padx=40)
         self.entry.bind("<Return>", lambda e: self.submit())
-        self.feedback = ttk.Label(self.win, text="", font=("", 14))
-        self.feedback.pack(pady=16)
-        self.hint = ttk.Label(self.win, text="", font=("", 12, "italic"))
-        self.hint.pack()
-        bottom = ttk.Frame(self.win)
-        bottom.pack(side="bottom", fill="x", padx=16, pady=12)
-        ttk.Button(bottom, text="退出并保存", command=self.finish).pack(side="right")
-        self.remain = ttk.Label(bottom, text="")
-        self.remain.pack(side="left")
+
+        self.feedback = tk.Label(card, text="", font=FONT_QUIZ, bg=COLOR_CARD)
+        self.feedback.pack(pady=(20, 4))
+        self.hint = tk.Label(card, text="", font=FONT_SMALL, bg=COLOR_CARD, fg=COLOR_MUTED)
+        self.hint.pack(pady=(0, 12))
+
+        bottom = tk.Frame(self.win, bg=COLOR_BG)
+        bottom.grid(row=2, column=0, sticky="ew", padx=20, pady=12)
+        bottom.columnconfigure(0, weight=1)
+        self.remain = tk.Label(bottom, text="", font=FONT_SMALL, bg=COLOR_BG, fg=COLOR_MUTED)
+        self.remain.grid(row=0, column=0, sticky="w")
+        ttk.Button(bottom, text="退出并保存", style="Secondary.TButton",
+                   command=self.finish).grid(row=0, column=1, sticky="e")
 
     def _state(self, item):
         return self.conn.execute(
@@ -98,7 +124,7 @@ class QuizApp:
         self.prog_label.config(text=f"第 {self.idx + 1} / {self.total} 题")
         self.remain.config(text=f"剩余 {self.total - self.idx} 题")
         self.meaning_label.config(text=item["meaning"])
-        self.feedback.config(text="", foreground="black")
+        self.feedback.config(text="", fg=COLOR_TEXT)
         self.hint.config(text="")
         self.entry.config(state="normal")
         self.entry.delete(0, "end")
@@ -114,11 +140,11 @@ class QuizApp:
         self.stats[result] += 1
         self._save(item, result)
         if result == "correct":
-            self.feedback.config(text=f"✓ 正确：{item['word']}", foreground="#2e7d32")
+            self.feedback.config(text=f"✓ 正确：{item['word']}", fg=COLOR_CORRECT)
         elif result == "blur":
-            self.feedback.config(text=f"很接近！正确拼写是 {item['word']}", foreground="#e65100")
+            self.feedback.config(text=f"很接近！正确拼写是 {item['word']}", fg=COLOR_BLUR)
         else:
-            self.feedback.config(text=f"✗ 错误，正确拼写是 {item['word']}", foreground="#c62828")
+            self.feedback.config(text=f"✗ 错误，正确拼写是 {item['word']}", fg=COLOR_WRONG)
         if result != "correct" and item["id"] not in self.retry_done:
             self.retry_pool.append(item)
             self.hint.config(text="本词将稍后重练")

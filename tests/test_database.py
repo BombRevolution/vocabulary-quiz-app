@@ -50,3 +50,24 @@ def test_insert_words_creates_states(conn):
     database.insert_words(conn, bid, [("apple", "n. 苹果", "n")])
     row = conn.execute("SELECT status FROM word_state WHERE book_id=? AND word_id=(SELECT id FROM words WHERE word='apple')", (bid,)).fetchone()
     assert row[0] == "new"
+
+
+def test_reset_book_progress(conn):
+    bid = database.add_book(conn, "测试词库", "imported")
+    database.insert_words(conn, bid, [("apple", "n. 苹果", "n"), ("banana", "n. 香蕉", "n")])
+    conn.execute("UPDATE word_state SET status='poor', wrong_count=3, review_count=5, priority=8, "
+                 "last_result_date='2026-08-07', next_review_date='2026-08-08', first_quiz_date='2026-08-07' "
+                 "WHERE book_id=?", (bid,))
+    conn.commit()
+    database.reset_book_progress(conn, bid)
+    rows = conn.execute("SELECT status, wrong_count, review_count, priority, last_result_date, "
+                        "next_review_date, first_quiz_date FROM word_state WHERE book_id=?", (bid,)).fetchall()
+    assert len(rows) == 2
+    for r in rows:
+        assert r["status"] == "new"
+        assert r["wrong_count"] == 0
+        assert r["review_count"] == 0
+        assert r["priority"] == 0
+        assert r["last_result_date"] is None
+        assert r["next_review_date"] is None
+        assert r["first_quiz_date"] is None

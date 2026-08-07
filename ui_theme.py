@@ -1,0 +1,101 @@
+import ctypes
+import tkinter as tk
+from tkinter import ttk
+
+FONT_FAMILY = "Microsoft YaHei UI"
+FONT_TITLE = (FONT_FAMILY, 20, "bold")
+FONT_HEADING = (FONT_FAMILY, 16, "bold")
+FONT_BODY = (FONT_FAMILY, 12)
+FONT_SMALL = (FONT_FAMILY, 10)
+FONT_QUIZ = (FONT_FAMILY, 18, "bold")
+
+COLOR_PRIMARY = "#2b6cb0"
+COLOR_PRIMARY_DARK = "#1e4e79"
+COLOR_LIGHT_BLUE = "#ebf4ff"
+COLOR_BG = "#f5f7fa"
+COLOR_CARD = "#ffffff"
+COLOR_TEXT = "#1a202c"
+COLOR_MUTED = "#718096"
+COLOR_BORDER = "#d9e2ec"
+
+COLOR_CORRECT = "#2e7d32"
+COLOR_BLUR = "#e65100"
+COLOR_WRONG = "#c62828"
+
+
+def enable_dpi_awareness():
+    try:
+        ctypes.windll.shcore.SetProcessDpiAwareness(1)
+    except Exception:
+        try:
+            ctypes.windll.user32.SetProcessDPIAware()
+        except Exception:
+            pass
+
+
+def apply_theme(root):
+    enable_dpi_awareness()
+    try:
+        import ctypes as _c
+        factor = _c.windll.shcore.GetScaleFactorForDevice(0) / 96.0
+        root.tk.call("tk", "scaling", factor)
+    except Exception:
+        pass
+
+    style = ttk.Style(root)
+    try:
+        style.theme_use("clam")
+    except tk.TclError:
+        pass
+
+    style.configure(".", font=FONT_BODY, background=COLOR_BG, foreground=COLOR_TEXT)
+
+    style.configure("TFrame", background=COLOR_BG)
+    style.configure("Card.TFrame", background=COLOR_CARD)
+    style.configure("TLabel", background=COLOR_BG, foreground=COLOR_TEXT)
+    style.configure("Card.TLabel", background=COLOR_CARD, foreground=COLOR_TEXT)
+
+    style.configure("Title.TLabel", font=FONT_TITLE, foreground=COLOR_PRIMARY, background=COLOR_BG)
+    style.configure("Heading.TLabel", font=FONT_HEADING, foreground=COLOR_TEXT, background=COLOR_BG)
+    style.configure("Muted.TLabel", font=FONT_SMALL, foreground=COLOR_MUTED, background=COLOR_BG)
+    style.configure("CardTitle.TLabel", font=FONT_HEADING, foreground=COLOR_PRIMARY, background=COLOR_CARD)
+    style.configure("StatValue.TLabel", font=FONT_TITLE, foreground=COLOR_PRIMARY, background=COLOR_CARD,
+                    anchor="center")
+    style.configure("StatName.TLabel", font=FONT_SMALL, foreground=COLOR_MUTED, background=COLOR_CARD,
+                    anchor="center")
+
+    style.configure("Primary.TButton", font=FONT_BODY, background=COLOR_PRIMARY, foreground="#ffffff",
+                    borderwidth=0, focusthickness=0, padding=(18, 8))
+    style.map("Primary.TButton",
+              background=[("active", COLOR_PRIMARY_DARK), ("pressed", COLOR_PRIMARY_DARK)],
+              foreground=[("disabled", "#cbd5e0")])
+    style.configure("Secondary.TButton", font=FONT_BODY, background=COLOR_LIGHT_BLUE,
+                    foreground=COLOR_PRIMARY, borderwidth=0, focusthickness=0, padding=(12, 6))
+    style.map("Secondary.TButton",
+              background=[("active", "#d6e6ff"), ("pressed", "#d6e6ff")],
+              foreground=[("disabled", "#a0aec0")])
+    style.configure("Danger.TButton", font=FONT_BODY, background="#fef2f2", foreground=COLOR_WRONG,
+                    borderwidth=0, focusthickness=0, padding=(12, 6))
+    style.map("Danger.TButton",
+              background=[("active", "#fee2e2"), ("pressed", "#fee2e2")])
+
+    style.configure("TEntry", font=FONT_BODY, fieldbackground=COLOR_CARD, bordercolor=COLOR_BORDER,
+                    lightcolor=COLOR_BORDER, darkcolor=COLOR_BORDER, padding=6)
+    style.map("TEntry", bordercolor=[("focus", COLOR_PRIMARY)], lightcolor=[("focus", COLOR_PRIMARY)],
+              darkcolor=[("focus", COLOR_PRIMARY)])
+
+    style.configure("TProgressbar", troughcolor=COLOR_LIGHT_BLUE, background=COLOR_PRIMARY,
+                    borderwidth=0, thickness=14)
+
+    style.configure("Treeview", font=FONT_BODY, background=COLOR_CARD, fieldbackground=COLOR_CARD,
+                    foreground=COLOR_TEXT, rowheight=26)
+    style.map("Treeview", background=[("selected", COLOR_LIGHT_BLUE)],
+              foreground=[("selected", COLOR_PRIMARY)])
+    style.configure("Treeview.Heading", font=(FONT_FAMILY, 10, "bold"), background=COLOR_LIGHT_BLUE,
+                    foreground=COLOR_PRIMARY, padding=(4, 4))
+
+    style.configure("TCheckbutton", font=FONT_BODY, background=COLOR_BG, foreground=COLOR_TEXT)
+    style.configure("TSpinbox", font=FONT_BODY, fieldbackground=COLOR_CARD, arrowcolor=COLOR_PRIMARY,
+                    padding=4)
+    style.configure("TCombobox", font=FONT_BODY, fieldbackground=COLOR_CARD, arrowcolor=COLOR_PRIMARY,
+                    padding=4)

@@ -2,6 +2,8 @@ import tkinter as tk
 from tkinter import messagebox
 from tkinter import ttk
 import database
+from ui_theme import (COLOR_BG, COLOR_CARD, COLOR_LIGHT_BLUE, COLOR_PRIMARY, COLOR_MUTED,
+                      COLOR_TEXT, FONT_BODY, FONT_HEADING, FONT_SMALL)
 
 
 class MainApp:
@@ -11,31 +13,59 @@ class MainApp:
         self.db_path = db_path
         self.config = config
         root.title("单词拼写测试")
-        root.geometry("760x520")
+        root.geometry("820x560")
+        root.minsize(760, 500)
+        root.configure(bg=COLOR_BG)
         self._build_ui()
         self.refresh()
 
     def _build_ui(self):
-        main = ttk.Frame(self.root, padding=16)
-        main.pack(fill="both", expand=True)
-        left = ttk.Frame(main)
-        left.pack(side="left", fill="y", padx=(0, 16))
-        ttk.Label(left, text="词库").pack(anchor="w")
-        self.book_list = tk.Listbox(left, width=26, height=18)
-        self.book_list.pack(fill="y")
-        self.book_list.bind("<<ListboxSelect>>", lambda e: self.refresh())
-        btn_row = ttk.Frame(left)
-        btn_row.pack(fill="x", pady=6)
-        ttk.Button(btn_row, text="导入词库", command=self.open_import).pack(side="left", padx=(0, 6))
-        ttk.Button(btn_row, text="设置", command=self.open_settings).pack(side="left")
+        main = tk.Frame(self.root, bg=COLOR_BG)
+        main.pack(fill="both", expand=True, padx=20, pady=16)
 
-        right = ttk.Frame(main)
+        left = tk.Frame(main, bg=COLOR_BG)
+        left.pack(side="left", fill="y", padx=(0, 20))
+        tk.Label(left, text="词库", font=FONT_HEADING, bg=COLOR_BG, fg=COLOR_PRIMARY).pack(anchor="w")
+        self.book_list = tk.Listbox(left, width=28, height=16, font=FONT_BODY,
+                                    bg=COLOR_CARD, fg=COLOR_TEXT, selectbackground=COLOR_LIGHT_BLUE,
+                                    selectforeground=COLOR_PRIMARY, highlightthickness=1,
+                                    highlightbackground=COLOR_LIGHT_BLUE, relief="flat", bd=0)
+        self.book_list.pack(fill="y", pady=(8, 8))
+        self.book_list.bind("<<ListboxSelect>>", lambda e: self.refresh())
+
+        btn_col = tk.Frame(left, bg=COLOR_BG)
+        btn_col.pack(fill="x")
+        ttk.Button(btn_col, text="导入词库", style="Secondary.TButton",
+                   command=self.open_import).pack(fill="x", pady=(0, 6))
+        ttk.Button(btn_col, text="重置进度", style="Danger.TButton",
+                   command=self.reset_progress).pack(fill="x", pady=(0, 6))
+        ttk.Button(btn_col, text="设置", style="Secondary.TButton",
+                   command=self.open_settings).pack(fill="x")
+
+        right = tk.Frame(main, bg=COLOR_BG)
         right.pack(side="left", fill="both", expand=True)
-        self.title = ttk.Label(right, text="", font=("", 16, "bold"))
-        self.title.pack(anchor="w")
-        self.stats = ttk.Label(right, text="", justify="left", font=("", 12))
-        self.stats.pack(anchor="w", pady=12)
-        ttk.Button(right, text="开始学习", command=self.start_quiz).pack(anchor="w", ipadx=24, ipady=8)
+
+        self.title = tk.Label(right, text="", font=FONT_HEADING, bg=COLOR_BG, fg=COLOR_TEXT)
+        self.title.pack(anchor="w", pady=(0, 12))
+
+        card = tk.Frame(right, bg=COLOR_CARD, highlightthickness=1, highlightbackground=COLOR_LIGHT_BLUE)
+        card.pack(fill="both", expand=False, pady=(0, 16))
+
+        stat_grid = tk.Frame(card, bg=COLOR_CARD)
+        stat_grid.pack(fill="x", padx=16, pady=16)
+        self._stat_cells = {}
+        names = [("new_done_today", "今日新词"), ("due", "待复习"), ("wrong_total", "错题总数"),
+                 ("mastered", "已掌握"), ("word_total", "词库词数")]
+        for i, (key, label) in enumerate(names):
+            cell = tk.Frame(stat_grid, bg=COLOR_CARD)
+            cell.grid(row=0, column=i, padx=12, sticky="nsew")
+            stat_grid.columnconfigure(i, weight=1)
+            tk.Label(cell, text="—", font=FONT_HEADING, bg=COLOR_CARD, fg=COLOR_PRIMARY).pack()
+            tk.Label(cell, text=label, font=FONT_SMALL, bg=COLOR_CARD, fg=COLOR_MUTED).pack()
+            self._stat_cells[key] = cell.winfo_children()[0]
+
+        start_btn = ttk.Button(right, text="开始学习", style="Primary.TButton", command=self.start_quiz)
+        start_btn.pack(anchor="w", ipadx=28, ipady=10)
 
     def current_book(self):
         sel = self.book_list.curselection()
@@ -56,16 +86,16 @@ class MainApp:
         book = self.current_book()
         if not book:
             self.title.config(text="暂无词库")
-            self.stats.config(text="请先导入词库")
+            for w in self._stat_cells.values():
+                w.config(text="—")
             return
         self.title.config(text=f"当前词库：{book['name']}")
         counts = self._state_counts(book["id"])
-        txt = (f"今日新词：{counts['new_done_today']} / {self.config['daily_new_words']}\n"
-               f"待复习：{counts['due']}\n"
-               f"错题总数：{counts['wrong_total']}\n"
-               f"已掌握：{counts['mastered']}\n"
-               f"共 {book['word_count']} 词")
-        self.stats.config(text=txt)
+        values = {"new_done_today": f"{counts['new_done_today']} / {self.config['daily_new_words']}",
+                  "due": str(counts["due"]), "wrong_total": str(counts["wrong_total"]),
+                  "mastered": str(counts["mastered"]), "word_total": str(book["word_count"])}
+        for key, val in values.items():
+            self._stat_cells[key].config(text=val)
 
     def _state_counts(self, book_id):
         due_rows = self.conn.execute(
@@ -90,6 +120,19 @@ class MainApp:
             return
         from ui_quiz import QuizApp
         QuizApp(self.root, self.conn, book, self.config, on_close=self.refresh)
+
+    def reset_progress(self):
+        book = self.current_book()
+        if not book:
+            return
+        ok = messagebox.askyesno("重置进度",
+            f"确定要重置「{book['name']}」的全部学习进度吗？\n\n"
+            "所有单词将回到未学习状态，错题记录和掌握情况将清空。\n此操作不可撤销。")
+        if not ok:
+            return
+        database.reset_book_progress(self.conn, book["id"])
+        messagebox.showinfo("已重置", f"「{book['name']}」的学习进度已重置。")
+        self.refresh()
 
     def open_import(self):
         from ui_import import ImportDialog

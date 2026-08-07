@@ -92,3 +92,11 @@ def insert_words(conn, book_id, words):
     conn.execute("UPDATE books SET word_count = word_count + ? WHERE id=?", (inserted, book_id))
     conn.commit()
     return inserted
+
+
+def reset_book_progress(conn, book_id):
+    conn.execute(
+        "UPDATE word_state SET status='new', wrong_count=0, review_count=0, priority=0, "
+        "last_result_date=NULL, next_review_date=NULL, first_quiz_date=NULL WHERE book_id=?",
+        (book_id,))
+    conn.commit()

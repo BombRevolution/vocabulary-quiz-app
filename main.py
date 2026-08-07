@@ -32,7 +32,9 @@ def ensure_builtin(conn):
 
 def main():
     import tkinter as tk
+    from ui_theme import enable_dpi_awareness, apply_theme
     from ui_main import MainApp
+    enable_dpi_awareness()
     config = load_config()
     conn = database.get_conn(DB_PATH)
     database.init_db(conn)
@@ -40,6 +42,7 @@ def main():
     for key, val in config.items():
         database.set_setting(conn, key, val)
     root = tk.Tk()
+    apply_theme(root)
     app = MainApp(root, conn, DB_PATH, config)
     root.mainloop()
     conn.close()
