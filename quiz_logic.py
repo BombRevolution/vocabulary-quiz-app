@@ -1,4 +1,5 @@
 import re
+import math
 import unicodedata
 import random
 from datetime import date, timedelta
@@ -95,3 +96,9 @@ def judge(user_input, correct, ignore_case, ignore_punct):
     if edit_distance(u, c) == 1:
         return "blur"
     return "wrong"
+
+
+def reveal_mask(word, percent):
+    p = max(0, min(100, percent))
+    n = math.ceil(len(word) * p / 100)
+    return word[:n] + "_" * (len(word) - n)
