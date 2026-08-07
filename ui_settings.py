@@ -30,13 +30,25 @@ class SettingsDialog(tk.Toplevel):
         tk.Label(rows, text="忽略标点", font=font(14), bg=COLOR_BG, fg=COLOR_TEXT).grid(row=3, column=0, sticky="w", pady=10)
         self.punct_var = tk.BooleanVar(value=config.get("ignore_punct", False))
         CheckBox(rows, variable=self.punct_var).grid(row=3, column=1, sticky="w")
-        ttk.Button(rows, text="保存", style="Primary.TButton", command=self.save).grid(row=4, column=0, columnspan=2, pady=(20, 0))
+        tk.Label(rows, text="提示方案", font=font(14), bg=COLOR_BG, fg=COLOR_TEXT).grid(row=4, column=0, sticky="w", pady=10)
+        self.hint_mode_var = tk.StringVar(value=config.get("hint_mode", "reveal"))
+        hint_mode_box = ttk.Combobox(rows, textvariable=self.hint_mode_var, state="readonly", width=14,
+                                     values=["reveal", "full", "count"])
+        hint_mode_box.grid(row=4, column=1, sticky="w")
+        tk.Label(rows, text="揭示比例", font=font(14), bg=COLOR_BG, fg=COLOR_TEXT).grid(row=5, column=0, sticky="w", pady=10)
+        self.hint_percent_var = tk.IntVar(value=int(config.get("hint_percent", 30)))
+        percent_box = ttk.Combobox(rows, textvariable=self.hint_percent_var, state="readonly", width=14,
+                                   values=[20, 30, 40, 50])
+        percent_box.grid(row=5, column=1, sticky="w")
+        ttk.Button(rows, text="保存", style="Primary.TButton", command=self.save).grid(row=6, column=0, columnspan=2, pady=(20, 0))
         center_window(self)
 
     def save(self):
         self.config["daily_new_words"] = self.daily_var.get()
         self.config["ignore_case"] = self.case_var.get()
         self.config["ignore_punct"] = self.punct_var.get()
+        self.config["hint_mode"] = self.hint_mode_var.get()
+        self.config["hint_percent"] = self.hint_percent_var.get()
         config_path = os.path.join(os.path.dirname(self.db_path), "config.json")
         with open(config_path, "w", encoding="utf-8") as f:
             json.dump(self.config, f, ensure_ascii=False, indent=2)
