@@ -41,7 +41,7 @@
 - 设置界面输入控件用紧凑 ttk 样式 `S.TEntry`/`S.TCombobox`（padding=2）+ `font(12)`，数字框约为原来 1/4、其余约 1/2；`main.py` 默认 `daily_new_words=200`。
 - 提示方案在设置页下拉显示中文（`ui_settings.HINT_MODE_LABELS`），存储值 `hint_mode` 仍为 reveal/full/count（`HINT_MODE_LABELS_REV` 逆映射写回）。
 - 快捷键：`config` 的 `key_skip`/`key_hint`（Tk event 序列，默认 `<Control-d>`/`<Control-space>`），设置页按键捕获输入框配置，`ui_quiz` 绑定到输入框 `self.entry`。`ui_settings.build_event_sequence(state, keysym)` 为纯函数（无修饰键返回 `""`），`_capture_key` 过滤纯修饰键 keysym 防止无效序列。
-- 错题整理与导出 PDF（`ui_main.py` 的"整理错题"按钮 → `ui_wrongwords.py` 弹窗 → `pdf_export.py`）：不熟练词定义 = `word_state.status IN ('poor','blur')`，由 `database.list_unmastered_words(conn, book_id)` 查询（按 priority 降序）。`pdf_export.export_unmastered_pdf(book_name, words, out_path)` 用 PyMuPDF（`fitz`）生成卡片式 PDF，中文用黑体 `C:\Windows\Fonts\simhei.ttf`（`CN_FONT="simhei.ttf"`，路径由 `_font_path` 拼 `WINDIR`）。导出 PDF 依赖 `fitz`（已装，requirements 已加 `PyMuPDF`）。
+- 错题整理与导出 PDF（`ui_main.py` 的"整理错题"按钮 → `ui_wrongwords.py` 弹窗 → `pdf_export.py`）：不熟练词定义 = `word_state.status IN ('poor','blur')`，由 `database.list_unmastered_words(conn, book_id)` 查询（按 priority 降序）。`pdf_export.export_unmastered_pdf(book_name, words, out_path)` 用 PyMuPDF（`fitz`）生成 PDF，**三列按行紧凑排版**（每行 3 词，两行式条目：第 1 行 `word 词性` helv 12pt，第 2 行起中文释义中文黑体 11pt 自动折行），页眉保留标题+右对齐日期。布局常量在 `pdf_export.py` 顶部（`WORD_SIZE`/`MEAN_SIZE`/`MEAN_LH`/`ROW_GAP`/`GUTTER`/`COLS`）。英文用内置 `helv`（避免字间距），中文用 `fontname="zh"` + `fontfile=_font_path("simhei.ttf")`（自定义名嵌入 TTF，避免用保留名 `china-s` 导致不渲染）。导出 PDF 依赖 `fitz`（已装，requirements 已加 `PyMuPDF`）。
 
 ## 测试注意
 
