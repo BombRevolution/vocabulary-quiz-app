@@ -3,6 +3,7 @@ import tkinter as tk
 from tkinter import ttk
 
 FONT_FAMILY = "Microsoft YaHei UI"
+FONT_SCALE = 1.3
 
 COLOR_PRIMARY = "#2b6cb0"
 COLOR_PRIMARY_DARK = "#1e4e79"
@@ -19,6 +20,7 @@ COLOR_WRONG = "#c62828"
 
 
 def font(size, bold=False):
+    size = int(round(size * FONT_SCALE))
     name = (FONT_FAMILY, size)
     if bold:
         name = (FONT_FAMILY, size, "bold")
