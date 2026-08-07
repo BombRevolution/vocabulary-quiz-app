@@ -25,7 +25,8 @@ def quiz_app():
         ("cat", "n. 猫", "n"),
     ])
     cfg = {"daily_new_words": 50, "ignore_case": True, "ignore_punct": False,
-           "hint_mode": "reveal", "hint_percent": 30}
+           "hint_mode": "reveal", "hint_percent": 30,
+           "key_skip": "<Control-d>", "key_hint": "<Control-space>"}
     root = tk.Tk()
     ui_theme.apply_theme(root)
     root.withdraw()
@@ -90,3 +91,10 @@ def test_hint_used_correct_counts_as_blur(quiz_app):
         "SELECT status FROM word_state WHERE book_id=? AND word_id=?",
         (qa.book["id"], item["id"])).fetchone()
     assert row[0] == "blur"
+
+
+def test_skip_hotkey_bound(quiz_app):
+    qa = quiz_app
+    bindings = qa.entry.bind() or ()
+    assert "<Control-Key-d>" in bindings
+    assert "<Control-Key-space>" in bindings

@@ -37,6 +37,8 @@ class QuizApp:
         self.stats = {"correct": 0, "blur": 0, "wrong": 0}
 
         self._build_ui()
+        self.entry.bind(self.config.get("key_skip", "<Control-d>"), lambda e: self.skip())
+        self.entry.bind(self.config.get("key_hint", "<Control-space>"), lambda e: self.reveal_hint())
         self._show_next()
         maximize(self.win)
 
