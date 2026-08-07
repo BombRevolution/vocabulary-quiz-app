@@ -23,7 +23,8 @@ def quiz_app():
         ("banana", "n. 香蕉", "n"),
         ("cat", "n. 猫", "n"),
     ])
-    cfg = {"daily_new_words": 50, "ignore_case": True, "ignore_punct": False}
+    cfg = {"daily_new_words": 50, "ignore_case": True, "ignore_punct": False,
+           "hint_mode": "reveal", "hint_percent": 30}
     root = tk.Tk()
     ui_theme.apply_theme(root)
     root.withdraw()
@@ -55,3 +56,26 @@ def test_submit_ignored_while_disabled(quiz_app):
     qa.submit()
     assert qa.stats["wrong"] == wrong_before
     assert qa.stats["correct"] == correct_before
+
+
+def test_skip_marks_mastered(quiz_app):
+    qa = quiz_app
+    item = qa.queue[qa.idx]
+    qa._save(item, "skip")
+    row = qa.conn.execute(
+        "SELECT status FROM word_state WHERE book_id=? AND word_id=?",
+        (qa.book["id"], item["id"])).fetchone()
+    assert row[0] == "mastered"
+
+
+def test_hint_used_correct_counts_as_blur(quiz_app):
+    qa = quiz_app
+    item = qa.queue[qa.idx]
+    qa.hint_used.add(item["id"])
+    qa.entry.insert(0, item["word"])
+    qa.submit()
+    assert qa.stats["blur"] == 1
+    row = qa.conn.execute(
+        "SELECT status FROM word_state WHERE book_id=? AND word_id=?",
+        (qa.book["id"], item["id"])).fetchone()
+    assert row[0] == "blur"

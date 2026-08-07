@@ -1,6 +1,6 @@
 import tkinter as tk
 from tkinter import ttk, messagebox
-from datetime import date
+from datetime import date, timedelta
 import quiz_logic
 from ui_theme import (COLOR_BG, COLOR_CARD, COLOR_CORRECT, COLOR_BLUR, COLOR_WRONG,
                       COLOR_PRIMARY, COLOR_MUTED, COLOR_TEXT, COLOR_LIGHT_BLUE,
@@ -17,6 +17,7 @@ class QuizApp:
         self.daily_new = int(config.get("daily_new_words", 50))
         self.retry_pool = []
         self.retry_done = set()
+        self.hint_used = set()
 
         self.win = tk.Toplevel(root)
         self.win.title(f"拼写测试 - {book['name']}")
@@ -92,14 +93,20 @@ class QuizApp:
         self.feedback.pack(pady=(20, 4))
         self.hint = tk.Label(inner, text="", font=font(11), bg=COLOR_CARD, fg=COLOR_MUTED)
         self.hint.pack(pady=(0, 12))
+        self.hint_text = tk.Label(inner, text="", font=font(16, bold=True), bg=COLOR_CARD, fg=COLOR_PRIMARY)
+        self.hint_text.pack(pady=(0, 8))
 
         bottom = tk.Frame(self.win, bg=COLOR_BG)
         bottom.grid(row=2, column=0, sticky="ew", padx=20, pady=12)
         bottom.columnconfigure(0, weight=1)
         self.remain = tk.Label(bottom, text="", font=font(11), bg=COLOR_BG, fg=COLOR_MUTED)
         self.remain.grid(row=0, column=0, sticky="w")
+        ttk.Button(bottom, text="提示", style="Secondary.TButton",
+                   command=self.reveal_hint).grid(row=0, column=1, sticky="e", padx=(0, 8))
+        ttk.Button(bottom, text="跳过", style="Secondary.TButton",
+                   command=self.skip).grid(row=0, column=2, sticky="e", padx=(0, 8))
         ttk.Button(bottom, text="退出并保存", style="Secondary.TButton",
-                   command=self.finish).grid(row=0, column=1, sticky="e")
+                   command=self.finish).grid(row=0, column=3, sticky="e")
 
     def _state(self, item):
         return self.conn.execute(
@@ -108,6 +115,14 @@ class QuizApp:
             (self.book["id"], item["id"])).fetchone()
 
     def _save(self, item, result):
+        if result == "skip":
+            nrd = (date.today() + timedelta(days=quiz_logic.REVIEW_INTERVALS["mastered"])).isoformat()
+            self.conn.execute(
+                "UPDATE word_state SET status='mastered', next_review_date=?, last_result_date=? "
+                "WHERE book_id=? AND word_id=?",
+                (nrd, self.today, self.book["id"], item["id"]))
+            self.conn.commit()
+            return
         st = self._state(item)
         state = dict(st) if st else {"status": "new", "wrong_count": 0, "review_count": 0,
                                      "priority": 0, "first_quiz_date": None}
@@ -129,9 +144,37 @@ class QuizApp:
         self.meaning_label.config(text=item["meaning"])
         self.feedback.config(text="", fg=COLOR_TEXT)
         self.hint.config(text="")
+        self.hint_text.config(text="")
         self.entry.config(state="normal")
         self.entry.delete(0, "end")
         self.entry.focus_set()
+
+    def reveal_hint(self):
+        if self.entry.instate(["disabled"]):
+            return
+        item = self.queue[self.idx]
+        word = item["word"]
+        mode = self.config.get("hint_mode", "reveal")
+        if mode == "full":
+            text = word
+        elif mode == "count":
+            text = " ".join(["_"] * len(word))
+        else:
+            pct = int(self.config.get("hint_percent", 30))
+            text = quiz_logic.reveal_mask(word, pct)
+        self.hint_text.config(text=f"提示：{text}")
+        self.hint_used.add(item["id"])
+
+    def skip(self):
+        if self.entry.instate(["disabled"]):
+            return
+        item = self.queue[self.idx]
+        self.stats["skipped"] = self.stats.get("skipped", 0) + 1
+        self._save(item, "skip")
+        self.feedback.config(text=f"已标记为学会：{item['word']}", fg=COLOR_CORRECT)
+        self.entry.config(state="disabled")
+        self.idx += 1
+        self.win.after(600, self._advance)
 
     def submit(self):
         if self.entry.instate(["disabled"]):
@@ -142,10 +185,15 @@ class QuizApp:
         item = self.queue[self.idx]
         result = quiz_logic.judge(user, item["word"], self.config.get("ignore_case", True),
                                   self.config.get("ignore_punct", False))
-        self.stats[result] += 1
-        self._save(item, result)
+        used_hint = item["id"] in self.hint_used
+        save_result = result
+        if used_hint and result == "correct":
+            save_result = "blur"
+        self.stats[save_result] += 1
+        self._save(item, save_result)
         if result == "correct":
-            self.feedback.config(text=f"✓ 正确：{item['word']}", fg=COLOR_CORRECT)
+            label = "✓ 正确（借助提示）" if used_hint else f"✓ 正确：{item['word']}"
+            self.feedback.config(text=label, fg=COLOR_CORRECT)
         elif result == "blur":
             self.feedback.config(text=f"很接近！正确拼写是 {item['word']}", fg=COLOR_BLUR)
         else:
