@@ -1,6 +1,7 @@
 import os, sys
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 import tkinter as tk
+from datetime import date, timedelta
 import pytest
 import database
 import ui_quiz
@@ -61,11 +62,21 @@ def test_submit_ignored_while_disabled(quiz_app):
 def test_skip_marks_mastered(quiz_app):
     qa = quiz_app
     item = qa.queue[qa.idx]
-    qa._save(item, "skip")
+    correct_before = qa.stats["correct"]
+    blur_before = qa.stats["blur"]
+    wrong_before = qa.stats["wrong"]
+    skipped_before = qa.stats.get("skipped", 0)
+    qa.skip()
     row = qa.conn.execute(
-        "SELECT status FROM word_state WHERE book_id=? AND word_id=?",
+        "SELECT status, next_review_date FROM word_state WHERE book_id=? AND word_id=?",
         (qa.book["id"], item["id"])).fetchone()
     assert row[0] == "mastered"
+    expected = (date.fromisoformat(qa.today) + timedelta(days=30)).isoformat()
+    assert row[1] == expected
+    assert qa.stats["correct"] == correct_before
+    assert qa.stats["blur"] == blur_before
+    assert qa.stats["wrong"] == wrong_before
+    assert qa.stats.get("skipped", 0) == skipped_before + 1
 
 
 def test_hint_used_correct_counts_as_blur(quiz_app):

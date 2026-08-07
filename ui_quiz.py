@@ -116,7 +116,7 @@ class QuizApp:
 
     def _save(self, item, result):
         if result == "skip":
-            nrd = (date.today() + timedelta(days=quiz_logic.REVIEW_INTERVALS["mastered"])).isoformat()
+            nrd = (date.fromisoformat(self.today) + timedelta(days=quiz_logic.REVIEW_INTERVALS["mastered"])).isoformat()
             self.conn.execute(
                 "UPDATE word_state SET status='mastered', next_review_date=?, last_result_date=? "
                 "WHERE book_id=? AND word_id=?",
@@ -198,9 +198,11 @@ class QuizApp:
             self.feedback.config(text=f"很接近！正确拼写是 {item['word']}", fg=COLOR_BLUR)
         else:
             self.feedback.config(text=f"✗ 错误，正确拼写是 {item['word']}", fg=COLOR_WRONG)
-        if result != "correct" and item["id"] not in self.retry_done:
-            self.retry_pool.append(item)
-            self.hint.config(text="本词将稍后重练")
+        if result != "correct":
+            self.hint_used.discard(item["id"])
+            if item["id"] not in self.retry_done:
+                self.retry_pool.append(item)
+                self.hint.config(text="本词将稍后重练")
         self.entry.config(state="disabled")
         self.idx += 1
         delay = 600 if result == "correct" else 1200
