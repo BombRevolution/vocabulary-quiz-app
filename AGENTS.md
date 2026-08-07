@@ -28,6 +28,7 @@
 - 内置词库 `雅思词汇9400词EXCEL词-乱序版.xls` 为 3 列（序号/单词/中文释义），导入时 `word_col=1, meaning_col=2`。
 - 词库状态档位：`new` / `poor` / `blur` / `good` / `mastered`，复习间隔 1/3/7/30 天（见 `quiz_logic.py` 的 `REVIEW_INTERVALS`）。
 - 判定规则受 `config.json` 中 `ignore_case`、`ignore_punct`、`daily_new_words` 控制。
+- 提示/跳过功能（`ui_quiz.py`）：`skip` 直接把词置为 `mastered`（next_review_date=今天+30，不计入 correct/blur/wrong 统计，走 `_save` 的独立分支）；`reveal_hint` 按 `config` 的 `hint_mode`（reveal/full/count）与 `hint_percent` 生成提示，`submit` 里用提示后答对会把结果改写为 `blur`。`quiz_logic.reveal_mask(word, percent)` 为纯函数，可无 GUI 单测。
 
 ## 测试注意
 
