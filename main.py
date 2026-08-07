@@ -20,7 +20,7 @@ def resource_path(relative):
 
 
 def load_config():
-    defaults = {"daily_new_words": 50, "ignore_case": True, "ignore_punct": False,
+    defaults = {"daily_new_words": 200, "ignore_case": True, "ignore_punct": False,
                 "hint_mode": "reveal", "hint_percent": 30,
                 "key_skip": "<Control-d>", "key_hint": "<Control-space>"}
     if os.path.exists(CONFIG_PATH):
