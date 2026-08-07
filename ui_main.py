@@ -42,6 +42,8 @@ class MainApp:
                    command=self.reset_progress).pack(fill="x", pady=(0, 6))
         ttk.Button(btn_col, text="删除词库", style="Danger.TButton",
                    command=self.delete_book).pack(fill="x", pady=(0, 6))
+        ttk.Button(btn_col, text="整理错题", style="Secondary.TButton",
+                   command=self.open_wrongwords).pack(fill="x", pady=(0, 6))
         ttk.Button(btn_col, text="设置", style="Secondary.TButton",
                    command=self.open_settings).pack(fill="x")
 
@@ -219,6 +221,14 @@ class MainApp:
     def open_import(self):
         from ui_import import ImportDialog
         ImportDialog(self.root, self.conn, on_close=self.refresh)
+
+    def open_wrongwords(self):
+        book = self.current_book()
+        if not book:
+            messagebox.showinfo("提示", "请先选择词库")
+            return
+        from ui_wrongwords import WrongWordsDialog
+        WrongWordsDialog(self.root, self.conn, book)
 
     def open_settings(self):
         from ui_settings import SettingsDialog
