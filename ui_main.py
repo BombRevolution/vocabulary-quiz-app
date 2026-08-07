@@ -40,6 +40,8 @@ class MainApp:
                    command=self.open_import).pack(fill="x", pady=(0, 6))
         ttk.Button(btn_col, text="重置进度", style="Danger.TButton",
                    command=self.reset_progress).pack(fill="x", pady=(0, 6))
+        ttk.Button(btn_col, text="删除词库", style="Danger.TButton",
+                   command=self.delete_book).pack(fill="x", pady=(0, 6))
         ttk.Button(btn_col, text="设置", style="Secondary.TButton",
                    command=self.open_settings).pack(fill="x")
 
@@ -199,6 +201,19 @@ class MainApp:
             return
         database.reset_book_progress(self.conn, book["id"])
         messagebox.showinfo("已重置", f"「{book['name']}」的学习进度已重置。")
+        self.refresh()
+
+    def delete_book(self):
+        book = self.current_book()
+        if not book:
+            return
+        ok = messagebox.askyesno("删除词库",
+            f"确定要删除「{book['name']}」词库吗？\n\n"
+            "该词库的所有单词和学习进度将被永久删除。\n此操作不可恢复！")
+        if not ok:
+            return
+        database.delete_book(self.conn, book["id"])
+        messagebox.showinfo("已删除", f"「{book['name']}」词库已删除。")
         self.refresh()
 
     def open_import(self):

@@ -49,6 +49,51 @@ def center_window(win):
         pass
 
 
+class CheckBox(tk.Canvas):
+    """自绘勾选框，方块大小按 DPI 随字体缩放，选中显示蓝色对勾。"""
+
+    def __init__(self, parent, variable, command=None, size=None, bg=None, **kw):
+        self._var = variable
+        self._cmd = command
+        if size is None:
+            try:
+                px_per_pt = parent.winfo_fpixels("1p")
+                size = int(round(14 * px_per_pt * 1.5))
+            except Exception:
+                size = 24
+        self._size = max(size, 20)
+        b = bg if bg is not None else COLOR_BG
+        super().__init__(parent, width=self._size, height=self._size, bg=b, highlightthickness=0,
+                         bd=0, takefocus=1, **kw)
+        self.bind("<Button-1>", self._toggle)
+        self.bind("<space>", lambda e: self._toggle(e))
+        self.bind("<Return>", lambda e: self._toggle(e))
+        self._draw()
+
+    def _toggle(self, event=None):
+        self._var.set(not self._var.get())
+        self._draw()
+        if self._cmd:
+            self._cmd()
+
+    def _draw(self):
+        self.delete("all")
+        s = self._size
+        pad = max(3, int(s * 0.14))
+        x0, y0 = pad, pad
+        x1, y1 = s - pad, s - pad
+        if self._var.get():
+            self.create_rectangle(x0, y0, x1, y1, outline=COLOR_PRIMARY, width=2,
+                                  fill=COLOR_LIGHT_BLUE, tags="box")
+            self.create_line(x0 + s * 0.18, y0 + s * 0.36, x0 + s * 0.36, y0 + s * 0.55,
+                             x1 - s * 0.08, y0 + s * 0.14,
+                             fill=COLOR_PRIMARY, width=max(3, int(s * 0.13)),
+                             capstyle="round", joinstyle="round", tags="check")
+        else:
+            self.create_rectangle(x0, y0, x1, y1, outline=COLOR_MUTED, width=2,
+                                  fill=COLOR_CARD, tags="box")
+
+
 def enable_dpi_awareness():
     try:
         ctypes.windll.shcore.SetProcessDpiAwareness(1)

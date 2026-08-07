@@ -3,7 +3,7 @@ import tkinter as tk
 from tkinter import ttk, filedialog, messagebox
 import importer
 from ui_theme import (COLOR_BG, COLOR_TEXT, COLOR_MUTED, COLOR_PRIMARY, COLOR_LIGHT_BLUE,
-                      font, center_window)
+                      font, center_window, CheckBox)
 
 
 class ImportDialog(tk.Toplevel):
@@ -39,11 +39,11 @@ class ImportDialog(tk.Toplevel):
         self.name_entry.grid(row=2, column=1, sticky="w", pady=6, padx=(12, 0))
 
         self.header_var = tk.BooleanVar(value=True)
-        tk.Checkbutton(rows, text="首行是表头（列名）", variable=self.header_var,
-                       command=self._toggle_header, font=font(14), bg=COLOR_BG,
-                       fg=COLOR_TEXT, selectcolor=COLOR_LIGHT_BLUE,
-                       activebackground=COLOR_BG, activeforeground=COLOR_TEXT,
-                       padx=6, pady=4).grid(row=3, column=0, columnspan=2, sticky="w", pady=6)
+        header_row = tk.Frame(rows, bg=COLOR_BG)
+        header_row.grid(row=3, column=0, columnspan=2, sticky="w", pady=6)
+        CheckBox(header_row, variable=self.header_var, command=self._toggle_header).pack(side="left")
+        tk.Label(header_row, text="首行是表头（列名）", font=font(14), bg=COLOR_BG,
+                 fg=COLOR_TEXT).pack(side="left", padx=(8, 0))
 
         preview_frame = tk.Frame(rows, bg=COLOR_BG)
         preview_frame.grid(row=4, column=0, columnspan=3, sticky="nsew", pady=(10, 0))

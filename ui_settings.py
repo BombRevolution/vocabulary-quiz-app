@@ -3,7 +3,7 @@ import os
 import tkinter as tk
 from tkinter import ttk
 from ui_theme import (COLOR_BG, COLOR_TEXT, COLOR_PRIMARY, COLOR_LIGHT_BLUE,
-                      font, center_window)
+                      font, center_window, CheckBox)
 
 
 class SettingsDialog(tk.Toplevel):
@@ -26,14 +26,10 @@ class SettingsDialog(tk.Toplevel):
         sp.grid(row=1, column=1, sticky="w")
         tk.Label(rows, text="忽略大小写", font=font(14), bg=COLOR_BG, fg=COLOR_TEXT).grid(row=2, column=0, sticky="w", pady=10)
         self.case_var = tk.BooleanVar(value=config.get("ignore_case", True))
-        tk.Checkbutton(rows, variable=self.case_var, font=font(14), bg=COLOR_BG, fg=COLOR_TEXT,
-                       selectcolor=COLOR_LIGHT_BLUE, activebackground=COLOR_BG,
-                       activeforeground=COLOR_TEXT, padx=6, pady=4).grid(row=2, column=1, sticky="w")
+        CheckBox(rows, variable=self.case_var).grid(row=2, column=1, sticky="w")
         tk.Label(rows, text="忽略标点", font=font(14), bg=COLOR_BG, fg=COLOR_TEXT).grid(row=3, column=0, sticky="w", pady=10)
         self.punct_var = tk.BooleanVar(value=config.get("ignore_punct", False))
-        tk.Checkbutton(rows, variable=self.punct_var, font=font(14), bg=COLOR_BG, fg=COLOR_TEXT,
-                       selectcolor=COLOR_LIGHT_BLUE, activebackground=COLOR_BG,
-                       activeforeground=COLOR_TEXT, padx=6, pady=4).grid(row=3, column=1, sticky="w")
+        CheckBox(rows, variable=self.punct_var).grid(row=3, column=1, sticky="w")
         ttk.Button(rows, text="保存", style="Primary.TButton", command=self.save).grid(row=4, column=0, columnspan=2, pady=(20, 0))
         center_window(self)
 

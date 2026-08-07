@@ -71,3 +71,28 @@ def test_reset_book_progress(conn):
         assert r["last_result_date"] is None
         assert r["next_review_date"] is None
         assert r["first_quiz_date"] is None
+
+
+def test_delete_book_removes_all(conn):
+    bid = database.add_book(conn, "待删除词库", "imported")
+    database.insert_words(conn, bid, [("apple", "n. 苹果", "n"), ("banana", "n. 香蕉", "n")])
+    conn.execute("INSERT INTO daily_log(book_id, date, new_done, correct, wrong, completed) "
+                 "VALUES(?, '2026-08-07', 2, 1, 1, 0)", (bid,))
+    conn.commit()
+    database.delete_book(conn, bid)
+    assert conn.execute("SELECT COUNT(*) FROM books WHERE id=?", (bid,)).fetchone()[0] == 0
+    assert conn.execute("SELECT COUNT(*) FROM words WHERE book_id=?", (bid,)).fetchone()[0] == 0
+    assert conn.execute("SELECT COUNT(*) FROM word_state WHERE book_id=?", (bid,)).fetchone()[0] == 0
+    assert conn.execute("SELECT COUNT(*) FROM daily_log WHERE book_id=?", (bid,)).fetchone()[0] == 0
+
+
+def test_delete_book_keeps_others(conn):
+    bid1 = database.add_book(conn, "词库一", "imported")
+    bid2 = database.add_book(conn, "词库二", "imported")
+    database.insert_words(conn, bid1, [("apple", "n. 苹果", "n")])
+    database.insert_words(conn, bid2, [("banana", "n. 香蕉", "n")])
+    database.delete_book(conn, bid1)
+    books = database.list_books(conn)
+    assert len(books) == 1
+    assert books[0]["id"] == bid2
+    assert conn.execute("SELECT COUNT(*) FROM words WHERE book_id=?", (bid2,)).fetchone()[0] == 1

@@ -100,3 +100,15 @@ def reset_book_progress(conn, book_id):
         "last_result_date=NULL, next_review_date=NULL, first_quiz_date=NULL WHERE book_id=?",
         (book_id,))
     conn.commit()
+
+
+def delete_book(conn, book_id):
+    try:
+        conn.execute("DELETE FROM daily_log WHERE book_id=?", (book_id,))
+        conn.execute("DELETE FROM word_state WHERE book_id=?", (book_id,))
+        conn.execute("DELETE FROM words WHERE book_id=?", (book_id,))
+        conn.execute("DELETE FROM books WHERE id=?", (book_id,))
+        conn.commit()
+    except Exception:
+        conn.rollback()
+        raise
