@@ -1,5 +1,45 @@
 import re
 import unicodedata
+from datetime import date, timedelta
+
+REVIEW_INTERVALS = {"poor": 1, "blur": 3, "good": 7, "mastered": 30}
+
+
+def next_review_date(status, today):
+    d = date.fromisoformat(today) + timedelta(days=REVIEW_INTERVALS[status])
+    return d.isoformat()
+
+
+def apply_result(state, result, today):
+    s = dict(state)
+    s["review_count"] = s.get("review_count", 0) + 1
+    if s.get("first_quiz_date") is None and result != "correct":
+        s["first_quiz_date"] = today
+    if result == "correct":
+        if s["status"] == "new":
+            s["status"] = "good"
+        elif s["status"] == "poor":
+            s["status"] = "blur"
+        elif s["status"] == "blur":
+            s["status"] = "good"
+        elif s["status"] == "good":
+            s["status"] = "mastered"
+        s["priority"] = max(0, s.get("priority", 0) - 1)
+        if s.get("first_quiz_date") is None:
+            s["first_quiz_date"] = today
+    elif result == "blur":
+        s["status"] = "blur"
+        s["priority"] = s.get("priority", 0) + 2
+    else:
+        old = s["status"]
+        s["status"] = "poor"
+        s["wrong_count"] = s.get("wrong_count", 0) + 1
+        s["priority"] = s.get("priority", 0) + 5
+        if old == "new":
+            s["first_quiz_date"] = today
+    s["last_result_date"] = today
+    s["next_review_date"] = next_review_date(s["status"], today)
+    return s
 
 
 def normalize(text, ignore_case, ignore_punct):
