@@ -29,6 +29,9 @@
 - 词库状态档位：`new` / `poor` / `blur` / `good` / `mastered`，复习间隔 1/3/7/30 天（见 `quiz_logic.py` 的 `REVIEW_INTERVALS`）。
 - 判定规则受 `config.json` 中 `ignore_case`、`ignore_punct`、`daily_new_words` 控制。
 - 提示/跳过功能（`ui_quiz.py`）：`skip` 直接把词置为 `mastered`（next_review_date=今天+30，不计入 correct/blur/wrong 统计，走 `_save` 的独立分支）；`reveal_hint` 按 `config` 的 `hint_mode`（reveal/full/count）与 `hint_percent` 生成提示，`submit` 里用提示后答对会把结果改写为 `blur`。`quiz_logic.reveal_mask(word, percent)` 为纯函数，可无 GUI 单测。
+- 全局字号用 `ui_theme.FONT_SCALE = 1.3` 控制（`font(N)` 返回 `round(N*1.3)`），窗口尺寸固定不变。
+- 提示方案在设置页下拉显示中文（`ui_settings.HINT_MODE_LABELS`），存储值 `hint_mode` 仍为 reveal/full/count（`HINT_MODE_LABELS_REV` 逆映射写回）。
+- 快捷键：`config` 的 `key_skip`/`key_hint`（Tk event 序列，默认 `<Control-d>`/`<Control-space>`），设置页按键捕获输入框配置，`ui_quiz` 绑定到输入框 `self.entry`。`ui_settings.build_event_sequence(state, keysym)` 为纯函数（无修饰键返回 `""`），`_capture_key` 过滤纯修饰键 keysym 防止无效序列。
 
 ## 测试注意
 
