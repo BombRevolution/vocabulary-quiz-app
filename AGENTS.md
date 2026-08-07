@@ -11,6 +11,13 @@
   - 无 `pytest.ini`/`pyproject.toml`/`conftest.py`；每个测试文件顶部通过 `sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))` 手动加根目录到路径，因此必须从仓库根目录运行 pytest。
 - 打包：PyInstaller `--onefile`，**不含内置词库**（`雅思词汇9400词EXCEL词-乱序版.xls` 不在仓库，`ensure_builtin` 检测到缺失即跳过）。`.spec`、`build/`、`dist/` 均被 gitignore，产出 exe 名为 `单词拼写测试.exe`（当前版本 v1.0.1，打包覆盖 `dist/` 旧 exe）。
 
+## GitHub 发布注意
+
+- **release 附件文件名不支持中文**：上传中文名的 exe 会被 GitHub 回退为 `default.exe`。release 附件统一用 ASCII 名 `word-quiz-app.exe`（与 v1.0.0 一致）；本地 `dist/` 内 exe 仍叫 `单词拼写测试.exe`。
+- **release body 必须用 UTF-8 发送**：PowerShell `Invoke-RestMethod` 提交 JSON 时须 `[System.Text.Encoding]::UTF8.GetBytes($json)`，否则中文被存成 `?` 乱码（v1.0.0 曾踩坑，v1.0.1 已用正确编码）。
+- **创建 release/上传附件无 MCP 工具、无 `gh` CLI**：用 `git credential fill`（GCM 存有 GitHub 凭据）取 token，再调 GitHub REST API（`POST /releases` 创建、`POST {upload_url}?name=` 上传、`PATCH /releases/assets/{id}` 改名）。
+- tag ≠ release：推 tag 不会出现在 Releases 页，需单独创建 release。
+
 ## 架构
 
 分层清晰，核心逻辑与 UI 分离：
