@@ -35,52 +35,55 @@ class SettingsDialog(tk.Toplevel):
         self.config = config
         self.db_path = db_path
         self.title("设置")
-        self.geometry("810x880")
+        self.geometry("540x720")
         self.resizable(False, False)
         self.configure(bg=COLOR_BG)
         self.grab_set()
         self.option_add("*TCombobox*Listbox.font", font(12))
-        rows = tk.Frame(self, bg=COLOR_BG, padx=32, pady=28)
+        st = ttk.Style(self)
+        st.configure("S.TEntry", padding=2)
+        st.configure("S.TCombobox", padding=2)
+        rows = tk.Frame(self, bg=COLOR_BG, padx=32, pady=18)
         rows.pack(fill="both", expand=True)
-        tk.Label(rows, text="设置", font=font(18, bold=True), bg=COLOR_BG,
-                 fg=COLOR_PRIMARY).grid(row=0, column=0, columnspan=2, sticky="w", pady=(0, 20))
-        tk.Label(rows, text="每日新词数", font=font(15), bg=COLOR_BG, fg=COLOR_TEXT).grid(row=1, column=0, sticky="w", pady=6)
+        tk.Label(rows, text="设置", font=font(16, bold=True), bg=COLOR_BG,
+                 fg=COLOR_PRIMARY).grid(row=0, column=0, columnspan=2, sticky="w", pady=(0, 12))
+        tk.Label(rows, text="每日新词数", font=font(14), bg=COLOR_BG, fg=COLOR_TEXT).grid(row=1, column=0, sticky="w", pady=4)
         self.daily_var = tk.IntVar(value=int(config.get("daily_new_words", 50)))
         sp = self._big_spinbox(rows, self.daily_var, 1, 500)
         sp.grid(row=1, column=1, sticky="w")
-        tk.Label(rows, text="忽略大小写", font=font(15), bg=COLOR_BG, fg=COLOR_TEXT).grid(row=2, column=0, sticky="w", pady=6)
+        tk.Label(rows, text="忽略大小写", font=font(14), bg=COLOR_BG, fg=COLOR_TEXT).grid(row=2, column=0, sticky="w", pady=4)
         self.case_var = tk.BooleanVar(value=config.get("ignore_case", True))
         CheckBox(rows, variable=self.case_var).grid(row=2, column=1, sticky="w")
-        tk.Label(rows, text="忽略标点", font=font(15), bg=COLOR_BG, fg=COLOR_TEXT).grid(row=3, column=0, sticky="w", pady=6)
+        tk.Label(rows, text="忽略标点", font=font(14), bg=COLOR_BG, fg=COLOR_TEXT).grid(row=3, column=0, sticky="w", pady=4)
         self.punct_var = tk.BooleanVar(value=config.get("ignore_punct", False))
         CheckBox(rows, variable=self.punct_var).grid(row=3, column=1, sticky="w")
-        tk.Label(rows, text="提示方案", font=font(15), bg=COLOR_BG, fg=COLOR_TEXT).grid(row=4, column=0, sticky="w", pady=6)
+        tk.Label(rows, text="提示方案", font=font(14), bg=COLOR_BG, fg=COLOR_TEXT).grid(row=4, column=0, sticky="w", pady=4)
         initial_mode = config.get("hint_mode", "reveal")
         self.hint_mode_var = tk.StringVar(value=HINT_MODE_LABELS[initial_mode])
-        hint_mode_box = ttk.Combobox(rows, textvariable=self.hint_mode_var, state="readonly", width=18,
-                                     font=font(17), values=list(HINT_MODE_LABELS.values()))
+        hint_mode_box = ttk.Combobox(rows, textvariable=self.hint_mode_var, state="readonly", width=12,
+                                     style="S.TCombobox", font=font(12), values=list(HINT_MODE_LABELS.values()))
         hint_mode_box.grid(row=4, column=1, sticky="w")
-        tk.Label(rows, text="揭示比例", font=font(15), bg=COLOR_BG, fg=COLOR_TEXT).grid(row=5, column=0, sticky="w", pady=6)
+        tk.Label(rows, text="揭示比例", font=font(14), bg=COLOR_BG, fg=COLOR_TEXT).grid(row=5, column=0, sticky="w", pady=4)
         self.hint_percent_var = tk.IntVar(value=int(config.get("hint_percent", 30)))
-        percent_box = ttk.Combobox(rows, textvariable=self.hint_percent_var, state="readonly", width=14,
-                                   font=font(17), values=[20, 30, 40, 50])
+        percent_box = ttk.Combobox(rows, textvariable=self.hint_percent_var, state="readonly", width=6,
+                                   style="S.TCombobox", font=font(12), values=[20, 30, 40, 50])
         percent_box.grid(row=5, column=1, sticky="w")
-        tk.Label(rows, text="跳过快捷键", font=font(15), bg=COLOR_BG, fg=COLOR_TEXT).grid(row=6, column=0, sticky="w", pady=6)
-        self.skip_key_entry = ttk.Entry(rows, width=18, font=font(17))
+        tk.Label(rows, text="跳过快捷键", font=font(14), bg=COLOR_BG, fg=COLOR_TEXT).grid(row=6, column=0, sticky="w", pady=4)
+        self.skip_key_entry = ttk.Entry(rows, width=14, style="S.TEntry", font=font(12))
         self.skip_key_entry.insert(0, config.get("key_skip", "<Control-d>"))
         self.skip_key_entry.grid(row=6, column=1, sticky="w")
         self.skip_key_entry.bind("<KeyPress>", lambda e: self._capture_key(e, self.skip_key_entry))
-        tk.Label(rows, text="提示快捷键", font=font(15), bg=COLOR_BG, fg=COLOR_TEXT).grid(row=7, column=0, sticky="w", pady=6)
-        self.hint_key_entry = ttk.Entry(rows, width=18, font=font(17))
+        tk.Label(rows, text="提示快捷键", font=font(14), bg=COLOR_BG, fg=COLOR_TEXT).grid(row=7, column=0, sticky="w", pady=4)
+        self.hint_key_entry = ttk.Entry(rows, width=14, style="S.TEntry", font=font(12))
         self.hint_key_entry.insert(0, config.get("key_hint", "<Control-space>"))
         self.hint_key_entry.grid(row=7, column=1, sticky="w")
         self.hint_key_entry.bind("<KeyPress>", lambda e: self._capture_key(e, self.hint_key_entry))
-        ttk.Button(rows, text="保存", style="Primary.TButton", command=self.save).grid(row=8, column=0, columnspan=2, pady=(20, 0))
+        ttk.Button(rows, text="保存", style="Primary.TButton", command=self.save).grid(row=8, column=0, columnspan=2, pady=(14, 0))
         center_window(self)
 
     def _big_spinbox(self, parent, var, lo, hi):
         frame = tk.Frame(parent, bg=COLOR_BG)
-        ttk.Entry(frame, textvariable=var, font=font(17), width=8, justify="center").grid(
+        ttk.Entry(frame, textvariable=var, style="S.TEntry", font=font(12), width=4, justify="center").grid(
             row=0, column=0, rowspan=2, sticky="ns")
 
         def bump(delta):
@@ -90,8 +93,8 @@ class SettingsDialog(tk.Toplevel):
                 v = lo
             var.set(max(lo, min(hi, v + delta)))
 
-        btn_kw = dict(font=font(14), bg=COLOR_LIGHT_BLUE, fg=COLOR_PRIMARY, relief="flat",
-                      bd=0, width=3, cursor="hand2",
+        btn_kw = dict(font=font(10), bg=COLOR_LIGHT_BLUE, fg=COLOR_PRIMARY, relief="flat",
+                      bd=0, width=2, cursor="hand2",
                       activebackground="#d6e6ff", activeforeground=COLOR_PRIMARY)
         tk.Button(frame, text="▲", command=lambda: bump(1), **btn_kw).grid(
             row=0, column=1, sticky="nsew", padx=(6, 0), pady=(0, 2))
