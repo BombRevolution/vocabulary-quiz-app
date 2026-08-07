@@ -1,9 +1,29 @@
 import json
 import os
 import tkinter as tk
-from tkinter import ttk
+from tkinter import ttk, messagebox
 from ui_theme import (COLOR_BG, COLOR_TEXT, COLOR_PRIMARY, COLOR_LIGHT_BLUE,
                       font, center_window, CheckBox)
+
+HINT_MODE_LABELS = {
+    "reveal": "揭示前N%字母",
+    "full": "显示完整拼写照抄",
+    "count": "显示字母个数",
+}
+HINT_MODE_LABELS_REV = {v: k for k, v in HINT_MODE_LABELS.items()}
+
+
+def build_event_sequence(state, keysym):
+    mods = []
+    if state & 0x4:
+        mods.append("Control")
+    if state & 0x1:
+        mods.append("Shift")
+    if state & 0x8:
+        mods.append("Alt")
+    if not mods:
+        return ""
+    return "<" + "-".join(mods + [keysym]) + ">"
 
 
 class SettingsDialog(tk.Toplevel):
@@ -12,7 +32,7 @@ class SettingsDialog(tk.Toplevel):
         self.config = config
         self.db_path = db_path
         self.title("设置")
-        self.geometry("560x420")
+        self.geometry("560x560")
         self.resizable(False, False)
         self.configure(bg=COLOR_BG)
         self.grab_set()
@@ -20,35 +40,62 @@ class SettingsDialog(tk.Toplevel):
         rows.pack(fill="both", expand=True)
         tk.Label(rows, text="设置", font=font(18, bold=True), bg=COLOR_BG,
                  fg=COLOR_PRIMARY).grid(row=0, column=0, columnspan=2, sticky="w", pady=(0, 20))
-        tk.Label(rows, text="每日新词数", font=font(14), bg=COLOR_BG, fg=COLOR_TEXT).grid(row=1, column=0, sticky="w", pady=10)
+        tk.Label(rows, text="每日新词数", font=font(14), bg=COLOR_BG, fg=COLOR_TEXT).grid(row=1, column=0, sticky="w", pady=6)
         self.daily_var = tk.IntVar(value=int(config.get("daily_new_words", 50)))
         sp = ttk.Spinbox(rows, from_=1, to=500, textvariable=self.daily_var, width=14)
         sp.grid(row=1, column=1, sticky="w")
-        tk.Label(rows, text="忽略大小写", font=font(14), bg=COLOR_BG, fg=COLOR_TEXT).grid(row=2, column=0, sticky="w", pady=10)
+        tk.Label(rows, text="忽略大小写", font=font(14), bg=COLOR_BG, fg=COLOR_TEXT).grid(row=2, column=0, sticky="w", pady=6)
         self.case_var = tk.BooleanVar(value=config.get("ignore_case", True))
         CheckBox(rows, variable=self.case_var).grid(row=2, column=1, sticky="w")
-        tk.Label(rows, text="忽略标点", font=font(14), bg=COLOR_BG, fg=COLOR_TEXT).grid(row=3, column=0, sticky="w", pady=10)
+        tk.Label(rows, text="忽略标点", font=font(14), bg=COLOR_BG, fg=COLOR_TEXT).grid(row=3, column=0, sticky="w", pady=6)
         self.punct_var = tk.BooleanVar(value=config.get("ignore_punct", False))
         CheckBox(rows, variable=self.punct_var).grid(row=3, column=1, sticky="w")
-        tk.Label(rows, text="提示方案", font=font(14), bg=COLOR_BG, fg=COLOR_TEXT).grid(row=4, column=0, sticky="w", pady=10)
-        self.hint_mode_var = tk.StringVar(value=config.get("hint_mode", "reveal"))
-        hint_mode_box = ttk.Combobox(rows, textvariable=self.hint_mode_var, state="readonly", width=14,
-                                     values=["reveal", "full", "count"])
+        tk.Label(rows, text="提示方案", font=font(14), bg=COLOR_BG, fg=COLOR_TEXT).grid(row=4, column=0, sticky="w", pady=6)
+        initial_mode = config.get("hint_mode", "reveal")
+        self.hint_mode_var = tk.StringVar(value=HINT_MODE_LABELS[initial_mode])
+        hint_mode_box = ttk.Combobox(rows, textvariable=self.hint_mode_var, state="readonly", width=18,
+                                     values=list(HINT_MODE_LABELS.values()))
         hint_mode_box.grid(row=4, column=1, sticky="w")
-        tk.Label(rows, text="揭示比例", font=font(14), bg=COLOR_BG, fg=COLOR_TEXT).grid(row=5, column=0, sticky="w", pady=10)
+        tk.Label(rows, text="揭示比例", font=font(14), bg=COLOR_BG, fg=COLOR_TEXT).grid(row=5, column=0, sticky="w", pady=6)
         self.hint_percent_var = tk.IntVar(value=int(config.get("hint_percent", 30)))
         percent_box = ttk.Combobox(rows, textvariable=self.hint_percent_var, state="readonly", width=14,
                                    values=[20, 30, 40, 50])
         percent_box.grid(row=5, column=1, sticky="w")
-        ttk.Button(rows, text="保存", style="Primary.TButton", command=self.save).grid(row=6, column=0, columnspan=2, pady=(20, 0))
+        tk.Label(rows, text="跳过快捷键", font=font(14), bg=COLOR_BG, fg=COLOR_TEXT).grid(row=6, column=0, sticky="w", pady=6)
+        self.skip_key_entry = ttk.Entry(rows, width=18)
+        self.skip_key_entry.insert(0, config.get("key_skip", "<Control-d>"))
+        self.skip_key_entry.grid(row=6, column=1, sticky="w")
+        self.skip_key_entry.bind("<KeyPress>", lambda e: self._capture_key(e, self.skip_key_entry))
+        tk.Label(rows, text="提示快捷键", font=font(14), bg=COLOR_BG, fg=COLOR_TEXT).grid(row=7, column=0, sticky="w", pady=6)
+        self.hint_key_entry = ttk.Entry(rows, width=18)
+        self.hint_key_entry.insert(0, config.get("key_hint", "<Control-space>"))
+        self.hint_key_entry.grid(row=7, column=1, sticky="w")
+        self.hint_key_entry.bind("<KeyPress>", lambda e: self._capture_key(e, self.hint_key_entry))
+        ttk.Button(rows, text="保存", style="Primary.TButton", command=self.save).grid(row=8, column=0, columnspan=2, pady=(20, 0))
         center_window(self)
+
+    def _capture_key(self, event, entry):
+        if event.keysym == "Escape":
+            return
+        seq = build_event_sequence(event.state, event.keysym)
+        if seq:
+            entry.delete(0, "end")
+            entry.insert(0, seq)
+        return "break"
 
     def save(self):
         self.config["daily_new_words"] = self.daily_var.get()
         self.config["ignore_case"] = self.case_var.get()
         self.config["ignore_punct"] = self.punct_var.get()
-        self.config["hint_mode"] = self.hint_mode_var.get()
+        self.config["hint_mode"] = HINT_MODE_LABELS_REV[self.hint_mode_var.get()]
         self.config["hint_percent"] = self.hint_percent_var.get()
+        skip_key = self.skip_key_entry.get().strip() or "<Control-d>"
+        hint_key = self.hint_key_entry.get().strip() or "<Control-space>"
+        if skip_key == hint_key:
+            messagebox.showwarning("快捷键冲突", "跳过与提示快捷键不能相同，请重新设置")
+            return
+        self.config["key_skip"] = skip_key
+        self.config["key_hint"] = hint_key
         config_path = os.path.join(os.path.dirname(self.db_path), "config.json")
         with open(config_path, "w", encoding="utf-8") as f:
             json.dump(self.config, f, ensure_ascii=False, indent=2)
