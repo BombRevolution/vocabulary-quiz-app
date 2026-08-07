@@ -3,7 +3,7 @@ from tkinter import messagebox
 from tkinter import ttk
 import database
 from ui_theme import (COLOR_BG, COLOR_CARD, COLOR_LIGHT_BLUE, COLOR_PRIMARY, COLOR_MUTED,
-                      COLOR_TEXT, font, scale_size, screen_size)
+                      COLOR_TEXT, font, maximize)
 
 
 class MainApp:
@@ -13,33 +13,33 @@ class MainApp:
         self.db_path = db_path
         self.config = config
         root.title("单词拼写测试")
-        w, h = scale_size(820, 560)
-        root.geometry(f"{w}x{h}")
-        root.minsize(*scale_size(760, 500))
+        root.geometry("1100x760")
+        root.minsize(900, 640)
         root.configure(bg=COLOR_BG)
         self._build_ui()
         self.refresh()
+        maximize(root)
 
     def _build_ui(self):
         main = tk.Frame(self.root, bg=COLOR_BG)
-        main.pack(fill="both", expand=True, padx=scale_size(20, 0)[0], pady=scale_size(0, 16)[1])
+        main.pack(fill="both", expand=True, padx=20, pady=16)
 
         left = tk.Frame(main, bg=COLOR_BG)
-        left.pack(side="left", fill="y", padx=(0, scale_size(20, 0)[0]))
+        left.pack(side="left", fill="y", padx=(0, 20))
         tk.Label(left, text="词库", font=font(16, bold=True), bg=COLOR_BG, fg=COLOR_PRIMARY).pack(anchor="w")
         self.book_list = tk.Listbox(left, width=28, height=16, font=font(12),
                                     bg=COLOR_CARD, fg=COLOR_TEXT, selectbackground=COLOR_LIGHT_BLUE,
                                     selectforeground=COLOR_PRIMARY, highlightthickness=1,
                                     highlightbackground=COLOR_LIGHT_BLUE, relief="flat", bd=0)
-        self.book_list.pack(fill="y", pady=scale_size(0, 8)[1])
+        self.book_list.pack(fill="y", pady=8)
         self.book_list.bind("<<ListboxSelect>>", lambda e: self.refresh())
 
         btn_col = tk.Frame(left, bg=COLOR_BG)
         btn_col.pack(fill="x")
         ttk.Button(btn_col, text="导入词库", style="Secondary.TButton",
-                   command=self.open_import).pack(fill="x", pady=(0, scale_size(0, 6)[1]))
+                   command=self.open_import).pack(fill="x", pady=(0, 6))
         ttk.Button(btn_col, text="重置进度", style="Danger.TButton",
-                   command=self.reset_progress).pack(fill="x", pady=(0, scale_size(0, 6)[1]))
+                   command=self.reset_progress).pack(fill="x", pady=(0, 6))
         ttk.Button(btn_col, text="设置", style="Secondary.TButton",
                    command=self.open_settings).pack(fill="x")
 
@@ -47,26 +47,26 @@ class MainApp:
         right.pack(side="left", fill="both", expand=True)
 
         self.title = tk.Label(right, text="", font=font(16, bold=True), bg=COLOR_BG, fg=COLOR_TEXT)
-        self.title.pack(anchor="w", pady=(0, scale_size(0, 12)[1]))
+        self.title.pack(anchor="w", pady=(0, 12))
 
         card = tk.Frame(right, bg=COLOR_CARD, highlightthickness=1, highlightbackground=COLOR_LIGHT_BLUE)
-        card.pack(fill="both", expand=False, pady=(0, scale_size(0, 16)[1]))
+        card.pack(fill="both", expand=False, pady=(0, 16))
 
         stat_grid = tk.Frame(card, bg=COLOR_CARD)
-        stat_grid.pack(fill="x", padx=scale_size(16, 0)[0], pady=scale_size(0, 16)[1])
+        stat_grid.pack(fill="x", padx=16, pady=16)
         self._stat_cells = {}
         names = [("new_done_today", "今日新词"), ("due", "待复习"), ("wrong_total", "错题总数"),
                  ("mastered", "已掌握"), ("word_total", "词库词数")]
         for i, (key, label) in enumerate(names):
             cell = tk.Frame(stat_grid, bg=COLOR_CARD)
-            cell.grid(row=0, column=i, padx=scale_size(12, 0)[0], sticky="nsew")
+            cell.grid(row=0, column=i, padx=12, sticky="nsew")
             stat_grid.columnconfigure(i, weight=1)
             tk.Label(cell, text="—", font=font(20, bold=True), bg=COLOR_CARD, fg=COLOR_PRIMARY).pack()
             tk.Label(cell, text=label, font=font(10), bg=COLOR_CARD, fg=COLOR_MUTED).pack()
             self._stat_cells[key] = cell.winfo_children()[0]
 
         start_btn = ttk.Button(right, text="开始学习", style="Primary.TButton", command=self.start_quiz)
-        start_btn.pack(anchor="w", ipadx=scale_size(28, 0)[0], ipady=scale_size(0, 10)[1])
+        start_btn.pack(anchor="w", ipadx=28, ipady=10)
 
     def current_book(self):
         sel = self.book_list.curselection()

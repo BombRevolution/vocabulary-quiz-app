@@ -1,7 +1,7 @@
 import tkinter as tk
 from tkinter import ttk, filedialog, messagebox
 import importer
-from ui_theme import COLOR_BG, COLOR_TEXT, COLOR_PRIMARY, font, scale_size
+from ui_theme import COLOR_BG, COLOR_TEXT, COLOR_PRIMARY, font
 
 
 class ImportDialog(tk.Toplevel):
@@ -10,56 +10,51 @@ class ImportDialog(tk.Toplevel):
         self.conn = conn
         self.on_close = on_close
         self.title("导入词库")
-        w, h = scale_size(600, 460)
-        self.geometry(f"{w}x{h}")
+        self.geometry("600x460")
         self.configure(bg=COLOR_BG)
         self.grab_set()
         self.path = None
         self.sheets = []
-        rows = tk.Frame(self, bg=COLOR_BG, padx=scale_size(16, 0)[0], pady=scale_size(0, 12)[1])
+        rows = tk.Frame(self, bg=COLOR_BG, padx=16, pady=12)
         rows.pack(fill="both", expand=True)
         for i in range(6):
             rows.columnconfigure(i, weight=1)
         rows.columnconfigure(1, weight=2)
 
-        p4 = scale_size(0, 4)[1]
-        p12 = scale_size(0, 12)[1]
-        p8 = scale_size(0, 8)[1]
-
         tk.Label(rows, text="导入词库", font=font(16, bold=True), bg=COLOR_BG,
-                 fg=COLOR_PRIMARY).grid(row=0, column=0, columnspan=3, sticky="w", pady=(0, p12))
+                 fg=COLOR_PRIMARY).grid(row=0, column=0, columnspan=3, sticky="w", pady=(0, 12))
 
         ttk.Button(rows, text="选择文件", style="Secondary.TButton",
-                   command=self.pick_file).grid(row=1, column=0, sticky="w", pady=p4)
+                   command=self.pick_file).grid(row=1, column=0, sticky="w", pady=4)
         self.file_label = tk.Label(rows, text="未选择文件", font=font(10), bg=COLOR_BG,
                                    fg=COLOR_TEXT, anchor="w")
         self.file_label.grid(row=1, column=1, sticky="ew", columnspan=2)
 
-        tk.Label(rows, text="工作表", font=font(12), bg=COLOR_BG, fg=COLOR_TEXT).grid(row=2, column=0, sticky="w", pady=p4)
+        tk.Label(rows, text="工作表", font=font(12), bg=COLOR_BG, fg=COLOR_TEXT).grid(row=2, column=0, sticky="w", pady=4)
         self.sheet_var = tk.StringVar()
         self.sheet_box = ttk.Combobox(rows, textvariable=self.sheet_var, state="readonly", width=26)
         self.sheet_box.grid(row=2, column=1, sticky="w", columnspan=2)
         self.sheet_box.bind("<<ComboboxSelected>>", lambda e: self.preview())
 
-        tk.Label(rows, text="英文单词列", font=font(12), bg=COLOR_BG, fg=COLOR_TEXT).grid(row=3, column=0, sticky="w", pady=p4)
+        tk.Label(rows, text="英文单词列", font=font(12), bg=COLOR_BG, fg=COLOR_TEXT).grid(row=3, column=0, sticky="w", pady=4)
         self.word_var = tk.StringVar()
         self.word_box = ttk.Combobox(rows, textvariable=self.word_var, state="readonly", width=26)
         self.word_box.grid(row=3, column=1, sticky="w", columnspan=2)
 
-        tk.Label(rows, text="中文释义列", font=font(12), bg=COLOR_BG, fg=COLOR_TEXT).grid(row=4, column=0, sticky="w", pady=p4)
+        tk.Label(rows, text="中文释义列", font=font(12), bg=COLOR_BG, fg=COLOR_TEXT).grid(row=4, column=0, sticky="w", pady=4)
         self.meaning_var = tk.StringVar()
         self.meaning_box = ttk.Combobox(rows, textvariable=self.meaning_var, state="readonly", width=26)
         self.meaning_box.grid(row=4, column=1, sticky="w", columnspan=2)
 
-        tk.Label(rows, text="词库名称", font=font(12), bg=COLOR_BG, fg=COLOR_TEXT).grid(row=5, column=0, sticky="w", pady=p4)
+        tk.Label(rows, text="词库名称", font=font(12), bg=COLOR_BG, fg=COLOR_TEXT).grid(row=5, column=0, sticky="w", pady=4)
         self.name_entry = ttk.Entry(rows, width=28)
         self.name_entry.grid(row=5, column=1, sticky="w", columnspan=2)
 
         self.preview_tree = ttk.Treeview(rows, height=8, show="headings")
-        self.preview_tree.grid(row=6, column=0, columnspan=3, sticky="nsew", pady=p8)
+        self.preview_tree.grid(row=6, column=0, columnspan=3, sticky="nsew", pady=8)
         rows.rowconfigure(6, weight=1)
         ttk.Button(rows, text="确认导入", style="Primary.TButton",
-                   command=self.do_import).grid(row=7, column=0, columnspan=3, pady=p8, ipadx=scale_size(20, 0)[0])
+                   command=self.do_import).grid(row=7, column=0, columnspan=3, pady=8, ipadx=20)
 
     def pick_file(self):
         path = filedialog.askopenfilename(filetypes=[("词库文件", "*.xls *.xlsx *.csv")])

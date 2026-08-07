@@ -4,7 +4,7 @@ from datetime import date
 import quiz_logic
 from ui_theme import (COLOR_BG, COLOR_CARD, COLOR_CORRECT, COLOR_BLUR, COLOR_WRONG,
                       COLOR_PRIMARY, COLOR_MUTED, COLOR_TEXT, COLOR_LIGHT_BLUE,
-                      font, scale_size)
+                      font, maximize)
 
 
 class QuizApp:
@@ -20,9 +20,8 @@ class QuizApp:
 
         self.win = tk.Toplevel(root)
         self.win.title(f"拼写测试 - {book['name']}")
-        w, h = scale_size(680, 520)
-        self.win.geometry(f"{w}x{h}")
-        self.win.minsize(*scale_size(600, 460))
+        self.win.geometry("900x680")
+        self.win.minsize(760, 560)
         self.win.configure(bg=COLOR_BG)
         self.win.grab_set()
 
@@ -38,6 +37,7 @@ class QuizApp:
 
         self._build_ui()
         self._show_next()
+        maximize(self.win)
 
     def _load_queue(self):
         rows = self.conn.execute(
@@ -63,36 +63,36 @@ class QuizApp:
         self.win.rowconfigure(2, weight=1)
 
         top = tk.Frame(self.win, bg=COLOR_BG)
-        top.grid(row=0, column=0, sticky="ew", padx=scale_size(20, 0)[0], pady=scale_size(0, 4)[1])
+        top.grid(row=0, column=0, sticky="ew", padx=20, pady=(16, 4))
         self.prog = ttk.Progressbar(top, maximum=self.total)
         self.prog.pack(fill="x")
         self.prog_label = tk.Label(top, text="", font=font(10), bg=COLOR_BG, fg=COLOR_MUTED)
-        self.prog_label.pack(pady=(scale_size(0, 4)[1], 0))
+        self.prog_label.pack(pady=(4, 0))
 
         center = tk.Frame(self.win, bg=COLOR_BG)
-        center.grid(row=1, column=0, sticky="nsew", padx=scale_size(20, 0)[0], pady=scale_size(0, 12)[1])
+        center.grid(row=1, column=0, sticky="nsew", padx=20, pady=12)
         self.win.rowconfigure(1, weight=1)
 
         card = tk.Frame(center, bg=COLOR_CARD, highlightthickness=1, highlightbackground=COLOR_LIGHT_BLUE)
         card.pack(fill="both", expand=True)
 
         tk.Label(card, text="请根据释义拼写英文单词", font=font(10), bg=COLOR_CARD,
-                 fg=COLOR_MUTED).pack(pady=scale_size(0, 4)[1])
+                 fg=COLOR_MUTED).pack(pady=(20, 4))
         self.meaning_label = tk.Label(card, text="", font=font(18, bold=True), bg=COLOR_CARD, fg=COLOR_TEXT,
-                                      wraplength=scale_size(560, 0)[0], justify="center")
-        self.meaning_label.pack(pady=scale_size(0, 20)[1])
+                                      wraplength=760, justify="center")
+        self.meaning_label.pack(pady=(8, 20))
 
         self.entry = ttk.Entry(card, font=font(18, bold=True), justify="center")
-        self.entry.pack(ipady=scale_size(0, 10)[1], padx=scale_size(40, 0)[0])
+        self.entry.pack(ipady=10, padx=40)
         self.entry.bind("<Return>", lambda e: self.submit())
 
         self.feedback = tk.Label(card, text="", font=font(18, bold=True), bg=COLOR_CARD)
-        self.feedback.pack(pady=(scale_size(0, 20)[1], scale_size(0, 4)[1]))
+        self.feedback.pack(pady=(20, 4))
         self.hint = tk.Label(card, text="", font=font(10), bg=COLOR_CARD, fg=COLOR_MUTED)
-        self.hint.pack(pady=(0, scale_size(0, 12)[1]))
+        self.hint.pack(pady=(0, 12))
 
         bottom = tk.Frame(self.win, bg=COLOR_BG)
-        bottom.grid(row=2, column=0, sticky="ew", padx=scale_size(20, 0)[0], pady=scale_size(0, 12)[1])
+        bottom.grid(row=2, column=0, sticky="ew", padx=20, pady=12)
         bottom.columnconfigure(0, weight=1)
         self.remain = tk.Label(bottom, text="", font=font(10), bg=COLOR_BG, fg=COLOR_MUTED)
         self.remain.grid(row=0, column=0, sticky="w")
