@@ -21,7 +21,7 @@
 
 ### 直接运行
 
-从 Releases 页面下载 `单词拼写测试.exe`（v1.0.1），双击运行，无需安装 Python 环境。
+从 Releases 页面下载 `word-quiz-app.exe`（v1.0.1，即单词拼写测试程序），双击运行，无需安装 Python 环境。
 
 exe 首次运行会在所在目录创建数据文件（vocab.db、config.json），建议放在桌面等可写目录使用。
 
