@@ -3,7 +3,7 @@ import os
 import tkinter as tk
 from tkinter import ttk, messagebox
 from ui_theme import (COLOR_BG, COLOR_TEXT, COLOR_PRIMARY, COLOR_LIGHT_BLUE,
-                      font, center_window, CheckBox)
+                      font, center_window, CheckBox, fit_and_center)
 
 HINT_MODE_LABELS = {
     "reveal": "揭示前N%字母",
@@ -35,8 +35,7 @@ class SettingsDialog(tk.Toplevel):
         self.config = config
         self.db_path = db_path
         self.title("设置")
-        self.geometry("540x720")
-        self.resizable(False, False)
+        self.resizable(True, True)
         self.configure(bg=COLOR_BG)
         self.grab_set()
         self.option_add("*TCombobox*Listbox.font", font(12))
@@ -79,7 +78,8 @@ class SettingsDialog(tk.Toplevel):
         self.hint_key_entry.grid(row=7, column=1, sticky="w")
         self.hint_key_entry.bind("<KeyPress>", lambda e: self._capture_key(e, self.hint_key_entry))
         ttk.Button(rows, text="保存", style="Primary.TButton", command=self.save).grid(row=8, column=0, columnspan=2, pady=(14, 0))
-        center_window(self)
+        self.update_idletasks()
+        fit_and_center(self, self.winfo_reqwidth() + 24, self.winfo_reqheight() + 16)
 
     def _big_spinbox(self, parent, var, lo, hi):
         frame = tk.Frame(parent, bg=COLOR_BG)

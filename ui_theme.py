@@ -52,6 +52,25 @@ def center_window(win):
         pass
 
 
+def clamp_geometry(w, h, sw, sh, margin=48):
+    w = max(320, min(int(w), sw - margin))
+    h = max(240, min(int(h), sh - margin))
+    x = max(0, (sw - w) // 2)
+    y = max(0, (sh - h) // 2)
+    return w, h, x, y
+
+
+def fit_and_center(win, w, h, margin=48):
+    try:
+        win.update_idletasks()
+        sw = win.winfo_screenwidth()
+        sh = win.winfo_screenheight()
+        cw, ch, cx, cy = clamp_geometry(w, h, sw, sh, margin)
+        win.geometry(f"{cw}x{ch}+{cx}+{cy}")
+    except Exception:
+        pass
+
+
 class CheckBox(tk.Canvas):
     """自绘勾选框，方块大小按 DPI 随字体缩放，选中显示蓝色对勾。"""
 

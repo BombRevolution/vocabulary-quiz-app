@@ -3,7 +3,7 @@ import tkinter as tk
 from tkinter import ttk, filedialog, messagebox
 import importer
 from ui_theme import (COLOR_BG, COLOR_TEXT, COLOR_MUTED, COLOR_PRIMARY, COLOR_LIGHT_BLUE,
-                      font, center_window, CheckBox)
+                      font, center_window, CheckBox, fit_and_center)
 
 
 class ImportDialog(tk.Toplevel):
@@ -13,7 +13,7 @@ class ImportDialog(tk.Toplevel):
         self.on_close = on_close
         self.title("导入词库")
         self.geometry("1040x760")
-        self.minsize(880, 640)
+        self.minsize(760, 560)
         self.configure(bg=COLOR_BG)
         self.grab_set()
         self.path = None
@@ -62,7 +62,7 @@ class ImportDialog(tk.Toplevel):
         ttk.Button(rows, text="确认导入", style="Primary.TButton",
                    command=self.do_import).grid(row=5, column=0, columnspan=3, pady=12, ipadx=24)
 
-        center_window(self)
+        fit_and_center(self, 1040, 760)
 
     def _toggle_header(self):
         self.has_header = self.header_var.get()
